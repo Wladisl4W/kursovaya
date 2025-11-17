@@ -12,9 +12,7 @@ services:
       - JWT_SECRET=your-super-secret-jwt-key
       - ENCRYPTION_KEY=your-super-secret-encryption-key
     volumes:
-      - ./backend/data.db:/app/data.db  # Для сохранения данных SQLite
-    depends_on:
-      - db
+      - ./backend/data.db:/root/data.db  # Для сохранения данных SQLite
     networks:
       - app-network
 
@@ -28,13 +26,8 @@ services:
       - backend
     networks:
       - app-network
-
-  db:
-    image: sqlite:latest  # условный образ - на самом деле SQLite файл
-    volumes:
-      - sqlite_data:/app/data.db
-    networks:
-      - app-network
+    environment:
+      - REACT_APP_API_URL=http://localhost:8080
 
 volumes:
   sqlite_data:
