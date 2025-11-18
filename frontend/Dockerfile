@@ -1,5 +1,5 @@
-# Используем официальный образ Node.js
-FROM node:18-alpine
+# Stage 1: Build
+FROM node:18-alpine AS builder
 
 # Устанавливаем рабочую директорию
 WORKDIR /app
@@ -13,8 +13,23 @@ RUN npm install
 # Копируем исходный код
 COPY . .
 
-# Экспортируем порт
-EXPOSE 3000
+# Устанавливаем переменные окружения
+ENV REACT_APP_API_URL=
 
-# Запускаем приложение
-CMD ["npm", "start"]
+# Собираем приложение
+RUN npm run build
+
+# Stage 2: Serve
+FROM nginx:alpine
+
+# Копируем собранные файлы из stage 1
+COPY --from=builder /app/build /usr/share/nginx/html
+
+# Копируем конфигурацию nginx
+COPY nginx.conf /etc/nginx/nginx.conf
+
+# Открываем порт
+EXPOSE 80
+
+# Запускаем nginx
+CMD ["nginx", "-g", "daemon off;"]

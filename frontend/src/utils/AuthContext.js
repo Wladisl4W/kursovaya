@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState } from 'react';
-import axios from 'axios';
+import { authAPI } from '../services/api';
 
 const AuthContext = createContext();
 
@@ -11,50 +11,85 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [token, setToken] = useState(localStorage.getItem('token') || null);
 
-  // Устанавливаем axios.defaults.headers
-  if (token) {
-    axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-  } else {
-    delete axios.defaults.headers.common['Authorization'];
-  }
-
   const login = async (email, password) => {
     try {
-      const response = await axios.post('http://localhost:8080/api/auth/login', {
-        email,
-        password
-      });
-      
-      const { token, user } = response.data;
-      setToken(token);
-      setUser(user);
-      localStorage.setItem('token', token);
+      const response = await authAPI.login(email, password);
+
+      const data = response.data;
+      const userInfo = {
+        id: data.user.id,
+        email: data.user.email,
+      };
+      setToken(data.token);
+      setUser(userInfo);
+      localStorage.setItem('token', data.token);
+
+      // Устанавливаем заголовок для будущих запросов
+      localStorage.setItem('auth-token', data.token);
+
       return { success: true };
     } catch (error) {
-      return { 
-        success: false, 
-        error: error.response?.data?.error || 'Login failed' 
-      };
+      if (error.response) {
+        // Сервер вернул ошибку
+        return {
+          success: false,
+          error: error.response.data.error || 'Ошибка входа',
+          errors: error.response.data.errors || null
+        };
+      } else if (error.request) {
+        // Ошибка сети
+        return {
+          success: false,
+          error: 'Ошибка соединения с сервером'
+        };
+      } else {
+        // Другие ошибки
+        return {
+          success: false,
+          error: 'Произошла ошибка при обработке запроса'
+        };
+      }
     }
   };
 
   const register = async (email, password) => {
     try {
-      const response = await axios.post('http://localhost:8080/api/auth/register', {
-        email,
-        password
-      });
-      
-      const { token, user } = response.data;
-      setToken(token);
-      setUser(user);
-      localStorage.setItem('token', token);
+      const response = await authAPI.register(email, password);
+
+      const data = response.data;
+      const userInfo = {
+        id: data.user.id,
+        email: data.user.email,
+      };
+      setToken(data.token);
+      setUser(userInfo);
+      localStorage.setItem('token', data.token);
+
+      // Устанавливаем заголовок для будущих запросов
+      localStorage.setItem('auth-token', data.token);
+
       return { success: true };
     } catch (error) {
-      return { 
-        success: false, 
-        error: error.response?.data?.error || 'Registration failed' 
-      };
+      if (error.response) {
+        // Сервер вернул ошибку
+        return {
+          success: false,
+          error: error.response.data.error || 'Ошибка регистрации',
+          errors: error.response.data.errors || null
+        };
+      } else if (error.request) {
+        // Ошибка сети
+        return {
+          success: false,
+          error: 'Ошибка соединения с сервером'
+        };
+      } else {
+        // Другие ошибки
+        return {
+          success: false,
+          error: 'Произошла ошибка при обработке запроса'
+        };
+      }
     }
   };
 
@@ -62,7 +97,9 @@ export const AuthProvider = ({ children }) => {
     setUser(null);
     setToken(null);
     localStorage.removeItem('token');
-    delete axios.defaults.headers.common['Authorization'];
+    localStorage.removeItem('auth-token');
+    // Также удаляем админ-токен при выходе
+    localStorage.removeItem('admin_token');
   };
 
   const value = {

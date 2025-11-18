@@ -1,49 +1,66 @@
 import React, { useState } from 'react';
-import { 
-  Dialog, 
-  DialogTitle, 
-  DialogContent, 
-  DialogActions, 
-  TextField, 
-  Button, 
-  Box, 
-  FormControl, 
-  InputLabel, 
-  Select, 
+import {
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  TextField,
+  Button,
+  Box,
+  FormControl,
+  InputLabel,
+  Select,
   MenuItem,
   Alert
 } from '@mui/material';
+import { storesAPI } from '../services/api';
 
-function AddStoreDialog({ open, onClose }) {
+function AddStoreDialog({ open, onClose, onAdded }) {
   const [storeType, setStoreType] = useState('wb');
   const [apiToken, setApiToken] = useState('');
   const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     if (!apiToken.trim()) {
       setError('API токен обязателен');
       return;
     }
 
+    setLoading(true);
+    setError('');
+
     try {
-      // Здесь будет запрос к API для добавления магазина
-      // await addStore(storeType, apiToken);
-      console.log('Добавление магазина:', { storeType, apiToken });
-      
-      // Закрываем диалог и сбрасываем форму
+      await storesAPI.addStore(storeType, apiToken);
+
+      // Сбрасываем форму и закрываем диалог
       setApiToken('');
       setError('');
+
+      // Вызываем callback для обновления списка магазинов
+      if (onAdded) {
+        onAdded();
+      }
+
       onClose();
     } catch (err) {
-      setError('Ошибка при добавлении магазина');
+      console.error('Failed to add store:', err);
+      if (err.response?.data?.error) {
+        setError(err.response.data.error);
+      } else {
+        setError('Ошибка при добавлении магазина');
+      }
+    } finally {
+      setLoading(false);
     }
   };
 
   const handleClose = () => {
     setApiToken('');
     setError('');
+    setLoading(false);
     onClose();
   };
 
@@ -53,7 +70,7 @@ function AddStoreDialog({ open, onClose }) {
       <Box component="form" onSubmit={handleSubmit}>
         <DialogContent>
           {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
-          
+
           <FormControl fullWidth margin="normal">
             <InputLabel>Тип магазина</InputLabel>
             <Select
@@ -65,7 +82,7 @@ function AddStoreDialog({ open, onClose }) {
               <MenuItem value="ozon">Ozon</MenuItem>
             </Select>
           </FormControl>
-          
+
           <TextField
             autoFocus
             margin="normal"
@@ -79,8 +96,8 @@ function AddStoreDialog({ open, onClose }) {
           />
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleClose}>Отмена</Button>
-          <Button type="submit">Добавить</Button>
+          <Button onClick={handleClose} disabled={loading}>Отмена</Button>
+          <Button type="submit" disabled={loading}>Добавить</Button>
         </DialogActions>
       </Box>
     </Dialog>

@@ -9,7 +9,7 @@ type User struct {
 type Store struct {
 	ID       int    `json:"id"`
 	UserID   int    `json:"user_id"`
-	Type     string `json:"type"`     // "wb" или "ozon"
+	Type     string `json:"type"`      // "wb" или "ozon"
 	APIToken string `json:"api_token"` // Токен от маркетплейса
 }
 
@@ -27,4 +27,10 @@ type ProductMapping struct {
 	Product1ID int `json:"product1_id"` // Товар из WB
 	Product2ID int `json:"product2_id"` // Товар из Ozon
 	UserID     int `json:"user_id"`
+}
+
+type Admin struct {
+	ID       int    `json:"id"`
+	Username string `json:"username"`
+	Password string `json:"password"` // Только для регистрации/входа
 }

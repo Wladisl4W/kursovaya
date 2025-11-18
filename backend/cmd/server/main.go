@@ -20,6 +20,11 @@ func main() {
 	// Подключаемся к базе данных
 	database.Connect(cfg)
 
+	// Инициализируем администратора
+	if err := service.InitializeAdmin(); err != nil {
+		log.Fatal("Failed to initialize admin:", err)
+	}
+
 	// Инициализируем сервисы
 	service.InitStoreService(cfg)
 

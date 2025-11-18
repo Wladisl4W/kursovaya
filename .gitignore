@@ -1,0 +1,4 @@
+frontend/.env
+
+.gemini/
+gha-creds-*.json
