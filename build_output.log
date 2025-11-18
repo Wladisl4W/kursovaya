@@ -1,0 +1,158 @@
+Creating network "kursovaya_main_app-network" with driver "bridge"
+Building backend
+DEPRECATED: The legacy builder is deprecated and will be removed in a future release.
+            Install the buildx component to build images with BuildKit:
+            https://docs.docker.com/go/buildx/
+
+Sending build context to Docker daemon  31.93MB
+Step 1/13 : FROM golang:1.24 AS builder
+ ---> 34551cffd701
+Step 2/13 : RUN apt-get update && apt-get install -y gcc musl-dev libpq-dev pkg-config
+ ---> Using cache
+ ---> 510640abff96
+Step 3/13 : WORKDIR /app
+ ---> Using cache
+ ---> b708edff24ae
+Step 4/13 : COPY go.mod go.sum ./
+ ---> Using cache
+ ---> 31f2380ce466
+Step 5/13 : RUN go mod download
+ ---> Using cache
+ ---> 3f44d6b79a3a
+Step 6/13 : COPY . .
+ ---> Using cache
+ ---> b864efc85a88
+Step 7/13 : RUN CGO_ENABLED=1 GOOS=linux go build -a -installsuffix cgo -o main ./cmd/server
+ ---> Using cache
+ ---> 98512fc3c895
+Step 8/13 : FROM ubuntu:22.04
+ ---> 9fa3e2b5204f
+Step 9/13 : RUN apt-get update && apt-get install -y ca-certificates libpq5 && rm -rf /var/lib/apt/lists/*
+ ---> Using cache
+ ---> 4c0355f6de88
+Step 10/13 : WORKDIR /root/
+ ---> Using cache
+ ---> 5aef7e33021e
+Step 11/13 : COPY --from=builder /app/main .
+ ---> Using cache
+ ---> 3be00bfcc351
+Step 12/13 : EXPOSE 8080
+ ---> Using cache
+ ---> f28061798031
+Step 13/13 : CMD ["./main"]
+ ---> Using cache
+ ---> 3090671d091e
+Successfully built 3090671d091e
+Successfully tagged kursovaya_main_backend:latest
+Building frontend
+DEPRECATED: The legacy builder is deprecated and will be removed in a future release.
+            Install the buildx component to build images with BuildKit:
+            https://docs.docker.com/go/buildx/
+
+Sending build context to Docker daemon  298.4MB
+Step 1/12 : FROM node:18-alpine AS builder
+ ---> ee77c6cd7c18
+Step 2/12 : WORKDIR /app
+ ---> Using cache
+ ---> 43dc7a908e41
+Step 3/12 : COPY package.json ./
+ ---> Using cache
+ ---> 3e5802be22e3
+Step 4/12 : RUN npm install
+ ---> Using cache
+ ---> ae67426dbf08
+Step 5/12 : COPY . .
+ ---> Using cache
+ ---> 251c1ea5dc12
+Step 6/12 : ENV REACT_APP_API_URL=
+ ---> Running in ffcd8696a6f4
+ ---> Removed intermediate container ffcd8696a6f4
+ ---> 30727a622e3d
+Step 7/12 : RUN npm run build
+ ---> Running in c5e1b857c912
+
+> marketplace-tracker-frontend@0.1.0 build
+> react-scripts build
+
+Creating an optimized production build...
+Compiled with warnings.
+
+[eslint] 
+src/components/Layout.js
+  Line 2:10:  'Outlet' is defined but never used  no-unused-vars
+
+src/components/MappingsView.js
+  Line 10:3:  'Button' is defined but never used     no-unused-vars
+  Line 18:3:  'CardMedia' is defined but never used  no-unused-vars
+  Line 20:3:  'Divider' is defined but never used    no-unused-vars
+
+src/components/StoresList.js
+  Line 3:3:   'Table' is defined but never used           no-unused-vars
+  Line 4:3:   'TableBody' is defined but never used       no-unused-vars
+  Line 5:3:   'TableCell' is defined but never used       no-unused-vars
+  Line 6:3:   'TableContainer' is defined but never used  no-unused-vars
+  Line 7:3:   'TableHead' is defined but never used       no-unused-vars
+  Line 8:3:   'TableRow' is defined but never used        no-unused-vars
+  Line 9:3:   'Paper' is defined but never used           no-unused-vars
+  Line 23:3:  'Divider' is defined but never used         no-unused-vars
+
+src/pages/DashboardPage.js
+  Line 26:17:  'setStats' is assigned a value but never used  no-unused-vars
+  Line 32:9:   'theme' is assigned a value but never used     no-unused-vars
+
+src/pages/LoginPage.js
+  Line 26:9:  'theme' is assigned a value but never used  no-unused-vars
+
+src/pages/RegisterPage.js
+  Line 23:9:  'theme' is assigned a value but never used  no-unused-vars
+
+src/utils/ThemeContext.js
+  Line 15:9:  'systemPrefersDark' is assigned a value but never used  no-unused-vars
+
+Search for the keywords to learn more about each warning.
+To ignore, add // eslint-disable-next-line to the line before.
+
+File sizes after gzip:
+
+  147.75 kB  build/static/js/main.bb042d61.js
+  263 B      build/static/css/main.e6c13ad2.css
+
+The project was built assuming it is hosted at /.
+You can control this with the homepage field in your package.json.
+
+The build folder is ready to be deployed.
+You may serve it with a static server:
+
+  npm install -g serve
+  serve -s build
+
+Find out more about deployment here:
+
+  https://cra.link/deployment
+
+ ---> Removed intermediate container c5e1b857c912
+ ---> 8b347ee5af20
+Step 8/12 : FROM nginx:alpine
+ ---> d4918ca78576
+Step 9/12 : COPY --from=builder /app/build /usr/share/nginx/html
+ ---> deb13d73bee3
+Step 10/12 : COPY nginx.conf /etc/nginx/nginx.conf
+ ---> bda39dcffc94
+Step 11/12 : EXPOSE 80
+ ---> Running in a65e3d971bba
+ ---> Removed intermediate container a65e3d971bba
+ ---> 26c678c2937e
+Step 12/12 : CMD ["nginx", "-g", "daemon off;"]
+ ---> Running in c3ce278a0208
+ ---> Removed intermediate container c3ce278a0208
+ ---> 18f0140898d7
+Successfully built 18f0140898d7
+Successfully tagged kursovaya_main_frontend:latest
+kursovaya_main_postgres_1 is up-to-date
+Creating kursovaya_main_backend_1 ... 
+Creating kursovaya_main_backend_1 ... error
+
+ERROR: for kursovaya_main_backend_1  Cannot create container for service backend: Conflict. The container name "/kursovaya_main_backend_1" is already in use by container "b313c9579f6983138fc55292e368d76a5536b20753d5e5724bd58ad991f08f38". You have to remove (or rename) that container to be able to reuse that name.
+
+ERROR: for backend  Cannot create container for service backend: Conflict. The container name "/kursovaya_main_backend_1" is already in use by container "b313c9579f6983138fc55292e368d76a5536b20753d5e5724bd58ad991f08f38". You have to remove (or rename) that container to be able to reuse that name.
+Encountered errors while bringing up the project.

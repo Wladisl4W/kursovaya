@@ -1,0 +1,220 @@
+Creating network "kursovaya_main_app-network" with driver "bridge"
+Building backend
+DEPRECATED: The legacy builder is deprecated and will be removed in a future release.
+            Install the buildx component to build images with BuildKit:
+            https://docs.docker.com/go/buildx/
+
+Sending build context to Docker daemon  31.93MB
+Step 1/13 : FROM golang:1.24 AS builder
+ ---> 34551cffd701
+Step 2/13 : RUN apt-get update && apt-get install -y gcc musl-dev libpq-dev pkg-config
+ ---> Using cache
+ ---> 510640abff96
+Step 3/13 : WORKDIR /app
+ ---> Using cache
+ ---> b708edff24ae
+Step 4/13 : COPY go.mod go.sum ./
+ ---> Using cache
+ ---> 31f2380ce466
+Step 5/13 : RUN go mod download
+ ---> Using cache
+ ---> 3f44d6b79a3a
+Step 6/13 : COPY . .
+ ---> 1a024ffa0396
+Step 7/13 : RUN CGO_ENABLED=1 GOOS=linux go build -a -installsuffix cgo -o main ./cmd/server
+ ---> Running in 4cc925abe580
+ ---> Removed intermediate container 4cc925abe580
+ ---> 8cb857aec5e4
+Step 8/13 : FROM ubuntu:22.04
+ ---> 9fa3e2b5204f
+Step 9/13 : RUN apt-get update && apt-get install -y ca-certificates libpq5 && rm -rf /var/lib/apt/lists/*
+ ---> Using cache
+ ---> 4c0355f6de88
+Step 10/13 : WORKDIR /root/
+ ---> Using cache
+ ---> 5aef7e33021e
+Step 11/13 : COPY --from=builder /app/main .
+ ---> 361f31bb27ac
+Step 12/13 : EXPOSE 8080
+ ---> Running in 2b5fbcb2aed5
+ ---> Removed intermediate container 2b5fbcb2aed5
+ ---> 4db140a41b5e
+Step 13/13 : CMD ["./main"]
+ ---> Running in d170e73f7125
+ ---> Removed intermediate container d170e73f7125
+ ---> d26b4b5b43f3
+Successfully built d26b4b5b43f3
+Successfully tagged kursovaya_main_backend:latest
+Building frontend
+DEPRECATED: The legacy builder is deprecated and will be removed in a future release.
+            Install the buildx component to build images with BuildKit:
+            https://docs.docker.com/go/buildx/
+
+Sending build context to Docker daemon  298.4MB
+Step 1/12 : FROM node:18-alpine AS builder
+ ---> ee77c6cd7c18
+Step 2/12 : WORKDIR /app
+ ---> Using cache
+ ---> 43dc7a908e41
+Step 3/12 : COPY package.json ./
+ ---> Using cache
+ ---> 3e5802be22e3
+Step 4/12 : RUN npm install
+ ---> Using cache
+ ---> ae67426dbf08
+Step 5/12 : COPY . .
+ ---> Using cache
+ ---> 251c1ea5dc12
+Step 6/12 : ENV REACT_APP_API_URL=
+ ---> Using cache
+ ---> 8b4c8dff74ec
+Step 7/12 : RUN npm run build
+ ---> Using cache
+ ---> 244d5fb9fee8
+Step 8/12 : FROM nginx:alpine
+ ---> d4918ca78576
+Step 9/12 : COPY --from=builder /app/build /usr/share/nginx/html
+ ---> Using cache
+ ---> deb13d73bee3
+Step 10/12 : COPY nginx.conf /etc/nginx/nginx.conf
+ ---> Using cache
+ ---> bda39dcffc94
+Step 11/12 : EXPOSE 80
+ ---> Using cache
+ ---> 26c678c2937e
+Step 12/12 : CMD ["nginx", "-g", "daemon off;"]
+ ---> Using cache
+ ---> 18f0140898d7
+Successfully built 18f0140898d7
+Successfully tagged kursovaya_main_frontend:latest
+Creating kursovaya_main_postgres_1 ... 
+Creating kursovaya_main_postgres_1 ... done
+Creating kursovaya_main_backend_1  ... 
+Creating kursovaya_main_backend_1  ... done
+Creating kursovaya_main_frontend_1 ... 
+Creating kursovaya_main_frontend_1 ... done
+Attaching to kursovaya_main_postgres_1, kursovaya_main_backend_1, kursovaya_main_frontend_1
+[36mbackend_1   |[0m 2025/11/18 22:30:03 [WARNING] DB_PASSWORD is using default value - this is insecure for production
+[36mbackend_1   |[0m 2025/11/18 22:30:03 [WARNING] JWT key should be at least 32 characters long for security in production
+[36mbackend_1   |[0m 2025/11/18 22:30:03 Connected to PostgreSQL database
+[33mfrontend_1  |[0m /docker-entrypoint.sh: /docker-entrypoint.d/ is not empty, will attempt to perform configuration
+[33mfrontend_1  |[0m /docker-entrypoint.sh: Looking for shell scripts in /docker-entrypoint.d/
+[33mfrontend_1  |[0m /docker-entrypoint.sh: Launching /docker-entrypoint.d/10-listen-on-ipv6-by-default.sh
+[36mbackend_1   |[0m 2025/11/18 22:30:03 Database tables created successfully
+[32mpostgres_1  |[0m 
+[32mpostgres_1  |[0m PostgreSQL Database directory appears to contain a database; Skipping initialization
+[32mpostgres_1  |[0m 
+[32mpostgres_1  |[0m 2025-11-18 22:30:03.078 UTC [1] LOG:  starting PostgreSQL 13.23 (Debian 13.23-1.pgdg13+1) on x86_64-pc-linux-gnu, compiled by gcc (Debian 14.2.0-19) 14.2.0, 64-bit
+[36mbackend_1   |[0m 2025/11/18 22:30:03 Администратор уже существует в базе данных
+[32mpostgres_1  |[0m 2025-11-18 22:30:03.078 UTC [1] LOG:  listening on IPv4 address "0.0.0.0", port 5432
+[32mpostgres_1  |[0m 2025-11-18 22:30:03.078 UTC [1] LOG:  listening on IPv6 address "::", port 5432
+[32mpostgres_1  |[0m 2025-11-18 22:30:03.081 UTC [1] LOG:  listening on Unix socket "/var/run/postgresql/.s.PGSQL.5432"
+[36mbackend_1   |[0m [GIN-debug] [WARNING] Creating an Engine instance with the Logger and Recovery middleware already attached.
+[36mbackend_1   |[0m 
+[36mbackend_1   |[0m [GIN-debug] [WARNING] Running in "debug" mode. Switch to "release" mode in production.
+[36mbackend_1   |[0m  - using env:	export GIN_MODE=release
+[36mbackend_1   |[0m  - using code:	gin.SetMode(gin.ReleaseMode)
+[36mbackend_1   |[0m 
+[32mpostgres_1  |[0m 2025-11-18 22:30:03.087 UTC [28] LOG:  database system was shut down at 2025-11-18 22:28:29 UTC
+[36mbackend_1   |[0m [GIN-debug] POST   /api/auth/register        --> kursovaya_backend/internal/handlers.(*AuthHandler).Register-fm (4 handlers)
+[36mbackend_1   |[0m [GIN-debug] POST   /api/auth/login           --> kursovaya_backend/internal/handlers.(*AuthHandler).Login-fm (4 handlers)
+[36mbackend_1   |[0m [GIN-debug] POST   /api/admin/login          --> kursovaya_backend/internal/handlers.(*AdminHandler).Login-fm (4 handlers)
+[36mbackend_1   |[0m [GIN-debug] GET    /health                   --> kursovaya_backend/internal/routes.SetupRoutes.func1 (4 handlers)
+[36mbackend_1   |[0m [GIN-debug] GET    /api/stores               --> kursovaya_backend/internal/handlers.(*StoreHandler).GetStores-fm (5 handlers)
+[36mbackend_1   |[0m [GIN-debug] POST   /api/stores               --> kursovaya_backend/internal/handlers.(*StoreHandler).AddStore-fm (5 handlers)
+[36mbackend_1   |[0m [GIN-debug] DELETE /api/stores/:id           --> kursovaya_backend/internal/handlers.(*StoreHandler).DeleteStore-fm (5 handlers)
+[36mbackend_1   |[0m [GIN-debug] GET    /api/products             --> kursovaya_backend/internal/handlers.(*ProductHandler).GetProducts-fm (5 handlers)
+[36mbackend_1   |[0m [GIN-debug] GET    /api/products/saved       --> kursovaya_backend/internal/handlers.(*ProductHandler).GetSavedProducts-fm (5 handlers)
+[36mbackend_1   |[0m [GIN-debug] GET    /api/mappings             --> kursovaya_backend/internal/handlers.(*MappingHandler).GetMappings-fm (5 handlers)
+[36mbackend_1   |[0m [GIN-debug] POST   /api/mappings             --> kursovaya_backend/internal/handlers.(*MappingHandler).CreateMapping-fm (5 handlers)
+[32mpostgres_1  |[0m 2025-11-18 22:30:03.094 UTC [1] LOG:  database system is ready to accept connections
+[36mbackend_1   |[0m [GIN-debug] DELETE /api/mappings/:id         --> kursovaya_backend/internal/handlers.(*MappingHandler).DeleteMapping-fm (5 handlers)
+[36mbackend_1   |[0m [GIN-debug] GET    /api/admin/stats          --> kursovaya_backend/internal/handlers.(*AdminManagementHandler).GetStats-fm (5 handlers)
+[36mbackend_1   |[0m [GIN-debug] GET    /api/admin/users          --> kursovaya_backend/internal/handlers.(*AdminManagementHandler).GetUsers-fm (5 handlers)
+[36mbackend_1   |[0m [GIN-debug] GET    /api/admin/users/:id      --> kursovaya_backend/internal/handlers.(*AdminManagementHandler).GetUser-fm (5 handlers)
+[36mbackend_1   |[0m [GIN-debug] DELETE /api/admin/users/:id      --> kursovaya_backend/internal/handlers.(*AdminManagementHandler).DeleteUser-fm (5 handlers)
+[36mbackend_1   |[0m [GIN-debug] GET    /api/admin/stores         --> kursovaya_backend/internal/handlers.(*AdminManagementHandler).GetStores-fm (5 handlers)
+[36mbackend_1   |[0m [GIN-debug] GET    /api/admin/stores/:id     --> kursovaya_backend/internal/handlers.(*AdminManagementHandler).GetStore-fm (5 handlers)
+[36mbackend_1   |[0m [GIN-debug] DELETE /api/admin/stores/:id     --> kursovaya_backend/internal/handlers.(*AdminManagementHandler).DeleteStore-fm (5 handlers)
+[36mbackend_1   |[0m [GIN-debug] GET    /api/admin/products       --> kursovaya_backend/internal/handlers.(*AdminManagementHandler).GetProducts-fm (5 handlers)
+[36mbackend_1   |[0m [GIN-debug] GET    /api/admin/products/:id   --> kursovaya_backend/internal/handlers.(*AdminManagementHandler).GetProduct-fm (5 handlers)
+[36mbackend_1   |[0m [GIN-debug] DELETE /api/admin/products/:id   --> kursovaya_backend/internal/handlers.(*AdminManagementHandler).DeleteProduct-fm (5 handlers)
+[36mbackend_1   |[0m [GIN-debug] GET    /api/admin/mappings       --> kursovaya_backend/internal/handlers.(*AdminManagementHandler).GetMappings-fm (5 handlers)
+[36mbackend_1   |[0m [GIN-debug] GET    /api/admin/mappings/:id   --> kursovaya_backend/internal/handlers.(*AdminManagementHandler).GetMapping-fm (5 handlers)
+[36mbackend_1   |[0m [GIN-debug] DELETE /api/admin/mappings/:id   --> kursovaya_backend/internal/handlers.(*AdminManagementHandler).DeleteMapping-fm (5 handlers)
+[36mbackend_1   |[0m 2025/11/18 22:30:03 Server starting on port 8080
+[36mbackend_1   |[0m [GIN-debug] [WARNING] You trusted all proxies, this is NOT safe. We recommend you to set a value.
+[36mbackend_1   |[0m Please check https://github.com/gin-gonic/gin/blob/master/docs/doc.md#dont-trust-all-proxies for details.
+[36mbackend_1   |[0m [GIN-debug] Listening and serving HTTP on :8080
+[33mfrontend_1  |[0m 10-listen-on-ipv6-by-default.sh: info: Getting the checksum of /etc/nginx/conf.d/default.conf
+[33mfrontend_1  |[0m 10-listen-on-ipv6-by-default.sh: info: Enabled listen on IPv6 in /etc/nginx/conf.d/default.conf
+[33mfrontend_1  |[0m /docker-entrypoint.sh: Sourcing /docker-entrypoint.d/15-local-resolvers.envsh
+[33mfrontend_1  |[0m /docker-entrypoint.sh: Launching /docker-entrypoint.d/20-envsubst-on-templates.sh
+[33mfrontend_1  |[0m /docker-entrypoint.sh: Launching /docker-entrypoint.d/30-tune-worker-processes.sh
+[33mfrontend_1  |[0m /docker-entrypoint.sh: Configuration complete; ready for start up
+[36mbackend_1   |[0m 2025/11/18 22:30:13 Попытка входа администратора с логином: admin
+[36mbackend_1   |[0m 2025/11/18 22:30:13 Успешная аутентификация администратора: admin
+[36mbackend_1   |[0m [GIN] 2025/11/18 - 22:30:13 | 200 |   320.19591ms |      172.18.0.1 | POST     "/api/admin/login"
+[36mbackend_1   |[0m [GIN] 2025/11/18 - 22:30:21 | 200 |    7.176433ms |      172.18.0.1 | GET      "/api/admin/stats"
+[33mfrontend_1  |[0m 172.18.0.1 - - [18/Nov/2025:22:30:38 +0000] "GET /admin HTTP/1.1" 200 560 "http://localhost:3000/admin/login" "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36"
+[33mfrontend_1  |[0m 172.18.0.1 - - [18/Nov/2025:22:30:38 +0000] "GET /static/js/main.bb042d61.js HTTP/1.1" 304 0 "http://localhost:3000/admin" "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36"
+[33mfrontend_1  |[0m 172.18.0.1 - - [18/Nov/2025:22:30:38 +0000] "GET /static/css/main.e6c13ad2.css HTTP/1.1" 304 0 "http://localhost:3000/admin" "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36"
+[36mbackend_1   |[0m [GIN] 2025/11/18 - 22:30:40 | 200 |     2.51913ms |      172.18.0.1 | GET      "/api/admin/stats"
+[33mfrontend_1  |[0m 172.18.0.1 - - [18/Nov/2025:22:30:41 +0000] "GET /favicon.ico HTTP/1.1" 304 0 "http://localhost:3000/admin" "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36"
+[36mbackend_1   |[0m [GIN] 2025/11/18 - 22:30:45 | 200 |    3.245443ms |      172.18.0.1 | GET      "/api/admin/stats"
+[36mbackend_1   |[0m [GIN] 2025/11/18 - 22:30:45 | 200 |   21.407065ms |      172.18.0.1 | GET      "/api/admin/users"
+[32mpostgres_1  |[0m 2025-11-18 22:30:53.218 UTC [37] ERROR:  column "type" does not exist at character 21
+[32mpostgres_1  |[0m 2025-11-18 22:30:53.218 UTC [37] STATEMENT:  SELECT id, user_id, type FROM stores
+[36mbackend_1   |[0m 2025/11/18 22:30:53 Error getting stores: pq: column "type" does not exist
+[36mbackend_1   |[0m [GIN] 2025/11/18 - 22:30:53 | 500 |     3.71304ms |      172.18.0.1 | GET      "/api/admin/stores"
+[36mbackend_1   |[0m [GIN] 2025/11/18 - 22:30:53 | 200 |    4.432039ms |      172.18.0.1 | GET      "/api/admin/stats"
+[36mbackend_1   |[0m [GIN] 2025/11/18 - 22:30:54 | 200 |    3.642551ms |      172.18.0.1 | GET      "/api/admin/products"
+[36mbackend_1   |[0m [GIN] 2025/11/18 - 22:30:54 | 200 |    4.940833ms |      172.18.0.1 | GET      "/api/admin/stats"
+[36mbackend_1   |[0m [GIN] 2025/11/18 - 22:30:55 | 200 |    2.739194ms |      172.18.0.1 | GET      "/api/admin/stats"
+[33mfrontend_1  |[0m 172.18.0.1 - - [18/Nov/2025:22:30:56 +0000] "GET /admin/login HTTP/1.1" 304 0 "http://localhost:3000/admin" "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36"
+[36mbackend_1   |[0m 2025/11/18 22:31:10 Попытка входа администратора с логином: admin
+[36mbackend_1   |[0m 2025/11/18 22:31:10 Успешная аутентификация администратора: admin
+[36mbackend_1   |[0m [GIN] 2025/11/18 - 22:31:11 | 200 |  315.055313ms |      172.18.0.1 | POST     "/api/admin/login"
+[36mbackend_1   |[0m [GIN] 2025/11/18 - 22:31:11 | 200 |    3.793979ms |      172.18.0.1 | GET      "/api/admin/stats"
+[36mbackend_1   |[0m [GIN] 2025/11/18 - 22:31:12 | 200 |    1.979652ms |      172.18.0.1 | GET      "/api/admin/users"
+[36mbackend_1   |[0m [GIN] 2025/11/18 - 22:31:12 | 200 |    3.508586ms |      172.18.0.1 | GET      "/api/admin/stats"
+[36mbackend_1   |[0m 2025/11/18 22:31:13 Error getting stores: pq: column "type" does not exist
+[32mpostgres_1  |[0m 2025-11-18 22:31:13.416 UTC [35] ERROR:  column "type" does not exist at character 21
+[32mpostgres_1  |[0m 2025-11-18 22:31:13.416 UTC [35] STATEMENT:  SELECT id, user_id, type FROM stores
+[36mbackend_1   |[0m [GIN] 2025/11/18 - 22:31:13 | 500 |    1.743829ms |      172.18.0.1 | GET      "/api/admin/stores"
+[36mbackend_1   |[0m [GIN] 2025/11/18 - 22:31:13 | 200 |     4.22478ms |      172.18.0.1 | GET      "/api/admin/stats"
+[36mbackend_1   |[0m [GIN] 2025/11/18 - 22:31:15 | 200 |    3.445941ms |      172.18.0.1 | GET      "/api/admin/products"
+[36mbackend_1   |[0m [GIN] 2025/11/18 - 22:31:15 | 200 |    6.541169ms |      172.18.0.1 | GET      "/api/admin/stats"
+[36mbackend_1   |[0m [GIN] 2025/11/18 - 22:31:16 | 200 |    1.520098ms |      172.18.0.1 | GET      "/api/admin/mappings"
+[36mbackend_1   |[0m [GIN] 2025/11/18 - 22:31:16 | 200 |    2.806117ms |      172.18.0.1 | GET      "/api/admin/stats"
+[36mbackend_1   |[0m [GIN] 2025/11/18 - 22:31:17 | 200 |    1.964153ms |      172.18.0.1 | GET      "/api/admin/users"
+[36mbackend_1   |[0m [GIN] 2025/11/18 - 22:31:17 | 200 |    3.187437ms |      172.18.0.1 | GET      "/api/admin/stats"
+[36mbackend_1   |[0m [GIN] 2025/11/18 - 22:31:18 | 200 |    2.757288ms |      172.18.0.1 | GET      "/api/admin/stats"
+[32mpostgres_1  |[0m 2025-11-18 22:31:19.188 UTC [37] ERROR:  column "type" does not exist at character 21
+[32mpostgres_1  |[0m 2025-11-18 22:31:19.188 UTC [37] STATEMENT:  SELECT id, user_id, type FROM stores
+[36mbackend_1   |[0m 2025/11/18 22:31:19 Error getting stores: pq: column "type" does not exist
+[36mbackend_1   |[0m [GIN] 2025/11/18 - 22:31:19 | 500 |    1.245234ms |      172.18.0.1 | GET      "/api/admin/stores"
+[36mbackend_1   |[0m [GIN] 2025/11/18 - 22:31:19 | 200 |    3.236838ms |      172.18.0.1 | GET      "/api/admin/stats"
+[33mfrontend_1  |[0m 172.18.0.1 - - [18/Nov/2025:22:31:24 +0000] "GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 304 0 "-" "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36"
+[33mfrontend_1  |[0m 172.18.0.1 - - [18/Nov/2025:22:31:26 +0000] "GET /static/js/main.bb042d61.js.map HTTP/1.1" 304 0 "-" "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36"
+[33mfrontend_1  |[0m 172.18.0.1 - - [18/Nov/2025:22:31:26 +0000] "GET /static/css/main.e6c13ad2.css.map HTTP/1.1" 304 0 "-" "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36"
+[36mbackend_1   |[0m [GIN] 2025/11/18 - 22:32:24 | 200 |    2.389554ms |      172.18.0.1 | GET      "/api/admin/products"
+[36mbackend_1   |[0m [GIN] 2025/11/18 - 22:32:24 | 200 |    5.036109ms |      172.18.0.1 | GET      "/api/admin/stats"
+[36mbackend_1   |[0m [GIN] 2025/11/18 - 22:32:25 | 200 |    1.509089ms |      172.18.0.1 | GET      "/api/admin/users"
+[36mbackend_1   |[0m [GIN] 2025/11/18 - 22:32:25 | 200 |    4.615979ms |      172.18.0.1 | GET      "/api/admin/stats"
+[36mbackend_1   |[0m [GIN] 2025/11/18 - 22:32:26 | 200 |    2.972574ms |      172.18.0.1 | GET      "/api/admin/stats"
+[36mbackend_1   |[0m [GIN] 2025/11/18 - 22:32:27 | 200 |    1.395611ms |      172.18.0.1 | GET      "/api/admin/users"
+[36mbackend_1   |[0m [GIN] 2025/11/18 - 22:32:27 | 200 |    2.928433ms |      172.18.0.1 | GET      "/api/admin/stats"
+[32mpostgres_1  |[0m 2025-11-18 22:32:31.664 UTC [35] ERROR:  column "type" does not exist at character 21
+[32mpostgres_1  |[0m 2025-11-18 22:32:31.664 UTC [35] STATEMENT:  SELECT id, user_id, type FROM stores
+[36mbackend_1   |[0m [GIN] 2025/11/18 - 22:32:31 | 500 |     2.12572ms |      172.18.0.1 | GET      "/api/admin/stores"
+[36mbackend_1   |[0m 2025/11/18 22:32:31 Error getting stores: pq: column "type" does not exist
+[33mkursovaya_main_frontend_1 exited with code 0
+[0m[36mkursovaya_main_backend_1 exited with code 2
+[0m[32mpostgres_1  |[0m 2025-11-18 22:33:19.849 UTC [1] LOG:  received fast shutdown request
+[32mpostgres_1  |[0m 2025-11-18 22:33:19.850 UTC [1] LOG:  aborting any active transactions
+[32mpostgres_1  |[0m 2025-11-18 22:33:19.857 UTC [1] LOG:  background worker "logical replication launcher" (PID 34) exited with exit code 1
+[32mpostgres_1  |[0m 2025-11-18 22:33:19.857 UTC [29] LOG:  shutting down
+[32mpostgres_1  |[0m 2025-11-18 22:33:19.888 UTC [1] LOG:  database system is shut down
+[32mkursovaya_main_postgres_1 exited with code 0
+[0m

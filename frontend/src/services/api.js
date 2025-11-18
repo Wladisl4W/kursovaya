@@ -105,6 +105,32 @@ export const adminAPI = {
   login: (username, password) => adminApi.post('/admin/login', { username, password }),
 };
 
+// Админ-управление (отдельный экземпляр с админ-токеном)
+export const adminManagementAPI = {
+  // Статистика
+  getStats: () => adminApi.get('/admin/stats'),
+
+  // Управление пользователями
+  getUsers: () => adminApi.get('/admin/users'),
+  getUser: (userId) => adminApi.get(`/admin/users/${userId}`),
+  deleteUser: (userId) => adminApi.delete(`/admin/users/${userId}`),
+
+  // Управление магазинами
+  getStores: () => adminApi.get('/admin/stores'),
+  getStore: (storeId) => adminApi.get(`/admin/stores/${storeId}`),
+  deleteStore: (storeId) => adminApi.delete(`/admin/stores/${storeId}`),
+
+  // Управление товарами
+  getProducts: () => adminApi.get('/admin/products'),
+  getProduct: (productId) => adminApi.get(`/admin/products/${productId}`),
+  deleteProduct: (productId) => adminApi.delete(`/admin/products/${productId}`),
+
+  // Управление сопоставлениями
+  getMappings: () => adminApi.get('/admin/mappings'),
+  getMapping: (mappingId) => adminApi.get(`/admin/mappings/${mappingId}`),
+  deleteMapping: (mappingId) => adminApi.delete(`/admin/mappings/${mappingId}`),
+};
+
 // Магазины
 export const storesAPI = {
   getStores: () => api.get('/stores'),

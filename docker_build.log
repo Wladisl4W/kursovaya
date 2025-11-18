@@ -1,0 +1,29 @@
+Building backend
+DEPRECATED: The legacy builder is deprecated and will be removed in a future release.
+            Install the buildx component to build images with BuildKit:
+            https://docs.docker.com/go/buildx/
+
+Sending build context to Docker daemon  32.86MB
+Step 1/13 : FROM golang:1.24 AS builder
+ ---> 34551cffd701
+Step 2/13 : RUN apt-get update && apt-get install -y gcc musl-dev libpq-dev pkg-config
+ ---> Using cache
+ ---> 510640abff96
+Step 3/13 : WORKDIR /app
+ ---> Using cache
+ ---> b708edff24ae
+Step 4/13 : COPY go.mod go.sum ./
+ ---> Using cache
+ ---> 31f2380ce466
+Step 5/13 : RUN go mod download
+ ---> Using cache
+ ---> 3f44d6b79a3a
+Step 6/13 : COPY . .
+ ---> Using cache
+ ---> ee1bfc5c8f98
+Step 7/13 : RUN CGO_ENABLED=1 GOOS=linux go build -a -installsuffix cgo -o main ./cmd/server
+ ---> Running in 3d3dcfeb6635
+[91m# kursovaya_backend/internal/middleware
+internal/middleware/admin_auth.go:34:11: declared and not used: email
+[0mThe command '/bin/sh -c CGO_ENABLED=1 GOOS=linux go build -a -installsuffix cgo -o main ./cmd/server' returned a non-zero code: 1
+Service 'backend' failed to build : Build failed

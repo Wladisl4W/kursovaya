@@ -50,7 +50,7 @@ func (h *AdminHandler) Login(c *gin.Context) {
 
 	// Генерируем JWT токен для администратора
 	// Используем тот же формат, что и для обычных пользователей
-	token, err := utils.GenerateJWT(admin.ID, admin.Username)
+	token, err := utils.GenerateJWT(admin.ID, "admin")
 	if err != nil {
 		log.Printf("Ошибка генерации токена для администратора: %v", err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": utils.LocalizeError(err)})

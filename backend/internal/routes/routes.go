@@ -37,6 +37,7 @@ func SetupRoutes(r *gin.Engine, cfg *config.Config) {
 	mappingHandler := handlers.NewMappingHandler()
 	adminHandler := &handlers.AdminHandler{}
 	storeHandler := &handlers.StoreHandler{}
+	adminManagementHandler := &handlers.AdminManagementHandler{}
 
 	// Публичные маршруты
 	public := r.Group("/api")
@@ -66,5 +67,33 @@ func SetupRoutes(r *gin.Engine, cfg *config.Config) {
 		protected.GET("/mappings", mappingHandler.GetMappings)
 		protected.POST("/mappings", mappingHandler.CreateMapping)
 		protected.DELETE("/mappings/:id", mappingHandler.DeleteMapping)
+	}
+
+	// Админ-маршруты (требуют аутентификации администратора)
+	admin := r.Group("/api/admin")
+	admin.Use(middleware.AdminAuthMiddleware())
+	{
+		// Статистика
+		admin.GET("/stats", adminManagementHandler.GetStats)
+
+		// Управление пользователями
+		admin.GET("/users", adminManagementHandler.GetUsers)
+		admin.GET("/users/:id", adminManagementHandler.GetUser)
+		admin.DELETE("/users/:id", adminManagementHandler.DeleteUser)
+
+		// Управление магазинами
+		admin.GET("/stores", adminManagementHandler.GetStores)
+		admin.GET("/stores/:id", adminManagementHandler.GetStore)
+		admin.DELETE("/stores/:id", adminManagementHandler.DeleteStore)
+
+		// Управление товарами
+		admin.GET("/products", adminManagementHandler.GetProducts)
+		admin.GET("/products/:id", adminManagementHandler.GetProduct)
+		admin.DELETE("/products/:id", adminManagementHandler.DeleteProduct)
+
+		// Управление сопоставлениями
+		admin.GET("/mappings", adminManagementHandler.GetMappings)
+		admin.GET("/mappings/:id", adminManagementHandler.GetMapping)
+		admin.DELETE("/mappings/:id", adminManagementHandler.DeleteMapping)
 	}
 }
