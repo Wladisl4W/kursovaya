@@ -3,36 +3,25 @@ import {
   Typography,
   Button,
   Box,
-  Paper,
-  Grid,
-  Card,
-  CardContent,
-  CardHeader,
-  Avatar,
-  AppBar,
-  Toolbar,
-  IconButton
+  Grid
 } from '@mui/material';
 import {
   Store as StoreIcon,
   Inventory as ProductsIcon,
   Compare as MappingsIcon,
   People as UsersIcon,
-  ExitToApp as LogoutIcon,
-  DarkMode as DarkModeIcon,
-  LightMode as LightModeIcon
+  ExitToApp as LogoutIcon
 } from '@mui/icons-material';
-import { useThemeContext } from '../utils/ThemeContext';
+import { useAuth } from '../utils/AuthContext';
 
 function AdminDashboard() {
+  const { logout } = useAuth();
   const [stats, setStats] = useState({
     users: 0,
     stores: 0,
     products: 0,
     mappings: 0
   });
-
-  const { themeMode, toggleTheme } = useThemeContext();
 
   const handleLogout = () => {
     // Удаляем токен администратора
@@ -43,210 +32,272 @@ function AdminDashboard() {
 
   // Карточки статистики
   const StatCard = ({ title, value, icon, color, subtitle }) => (
-    <Card elevation={3}>
-      <CardContent>
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <Box>
-            <Typography variant="h6" color="textSecondary" gutterBottom>
-              {title}
-            </Typography>
-            <Typography variant="h4" fontWeight="bold" color={color}>
-              {value}
-            </Typography>
-            {subtitle && (
-              <Typography variant="caption" color="textSecondary">
-                {subtitle}
-              </Typography>
-            )}
-          </Box>
-          <Avatar sx={{ bgcolor: color, width: 56, height: 56 }}>
-            {icon}
-          </Avatar>
-        </Box>
-      </CardContent>
-    </Card>
+    <Box
+      sx={{
+        p: 3,
+        borderRadius: '16px',
+        background: 'rgba(255, 255, 255, 0.05)',
+        border: '1px solid rgba(255, 255, 255, 0.1)',
+        backdropFilter: 'blur(10px)',
+        textAlign: 'center',
+        transition: 'all 0.3s ease',
+        '&:hover': {
+          transform: 'translateY(-5px)',
+          background: 'rgba(255, 255, 255, 0.08)',
+        }
+      }}
+    >
+      {icon}
+      <Typography variant="h4" fontWeight="bold" sx={{ color: 'white', mt: 1, mb: 1 }}>
+        {value}
+      </Typography>
+      <Typography sx={{ color: 'rgba(255, 255, 255, 0.8)' }}>{title}</Typography>
+      <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.6)' }}>
+        {subtitle}
+      </Typography>
+    </Box>
   );
 
   return (
     <Box
       sx={{
-        minHeight: '100vh',
-        display: 'flex',
-        flexDirection: 'column',
-        backgroundColor: (theme) => theme.palette.mode === 'dark' ? '#121212' : '#f5f5f7',
+        width: '100%',
+        maxWidth: 1200,
+        mx: 'auto',
+        p: 3,
       }}
     >
-      {/* Шапка с переключателем темы */}
-      <AppBar
-        position="static"
+      {/* Top bar with user info and logout */}
+      <Box
         sx={{
-          backgroundColor: (theme) => theme.palette.mode === 'dark' ? '#1e1e1e' : '#ffffff',
-          color: (theme) => theme.palette.mode === 'dark' ? '#e0e0e0' : '#424242',
-          boxShadow: 1,
-          mb: 3
-        }}
-      >
-        <Toolbar>
-          <Typography
-            variant="h6"
-            component="div"
-            sx={{ flexGrow: 1, fontWeight: 'bold' }}
-          >
-            Admin Panel
-          </Typography>
-
-          {/* Переключатель темы */}
-          <IconButton
-            color="inherit"
-            onClick={toggleTheme}
-            sx={{
-              backgroundColor: (theme) => theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.04)',
-              '&:hover': {
-                backgroundColor: (theme) => theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.08)'
-              }
-            }}
-            aria-label="toggle theme"
-          >
-            {themeMode === 'dark' ? <LightModeIcon /> : <DarkModeIcon />}
-          </IconButton>
-
-          <Button
-            variant="outlined"
-            startIcon={<LogoutIcon />}
-            onClick={handleLogout}
-            sx={{
-              ml: 2,
-              fontSize: '0.9rem',
-              fontWeight: 'medium',
-              borderRadius: 2,
-              px: 2
-            }}
-          >
-            Выйти
-          </Button>
-        </Toolbar>
-      </AppBar>
-
-      {/* Основной контент */}
-      <Box sx={{ flex: 1, px: 3, py: 2 }}>
-        {/* Шапка */}
-        <Box sx={{
           display: 'flex',
           justifyContent: 'space-between',
           alignItems: 'center',
           mb: 4,
           py: 2,
-          px: 1,
-          borderRadius: 2,
-          backgroundColor: (theme) => theme.palette.mode === 'dark' ? '#1e1e1e' : '#f5f5f5'
-        }}>
-          <Box>
-            <Typography variant="h4" fontWeight="bold" gutterBottom>
-              Админ-панель
-            </Typography>
-            <Typography variant="body1" color="textSecondary">
-              Управление системой
-            </Typography>
-          </Box>
+        }}
+      >
+        <Box>
+          <Typography
+            variant="h6"
+            sx={{
+              color: 'white',
+              fontWeight: 'bold',
+            }}
+          >
+            Админ-панель
+          </Typography>
+          <Typography
+            sx={{
+              color: 'rgba(255, 255, 255, 0.7)',
+              fontSize: '0.9rem',
+            }}
+          >
+            Панель управления системой
+          </Typography>
         </Box>
-
-        {/* Статистика */}
-        <Grid container spacing={3} sx={{ mb: 4 }}>
-          <Grid item xs={12} sm={6} md={3}>
-            <StatCard
-              title="Пользователи"
-              value={stats.users}
-              icon={<UsersIcon />}
-              color="primary.main"
-              subtitle="Всего зарегистрировано"
-            />
-          </Grid>
-          <Grid item xs={12} sm={6} md={3}>
-            <StatCard
-              title="Магазины"
-              value={stats.stores}
-              icon={<StoreIcon />}
-              color="secondary.main"
-              subtitle="Всего подключено"
-            />
-          </Grid>
-          <Grid item xs={12} sm={6} md={3}>
-            <StatCard
-              title="Товары"
-              value={stats.products}
-              icon={<ProductsIcon />}
-              color="success.main"
-              subtitle="Всего в системе"
-            />
-          </Grid>
-          <Grid item xs={12} sm={6} md={3}>
-            <StatCard
-              title="Сопоставления"
-              value={stats.mappings}
-              icon={<MappingsIcon />}
-              color="info.main"
-              subtitle="Всего создано"
-            />
-          </Grid>
-        </Grid>
-
-        {/* Контент */}
-        <Paper sx={{ p: 3, mb: 3 }}>
-          <Typography variant="h5" fontWeight="bold" gutterBottom>
-            Управление системой
-          </Typography>
-          <Typography variant="body1" color="textSecondary" paragraph>
-            Добро пожаловать в админ-панель системы отслеживания маркетплейсов.
-            Здесь вы можете управлять пользователями, просматривать статистику и настраивать систему.
-          </Typography>
-        </Paper>
-
-        {/* Дополнительные действия */}
-        <Grid container spacing={3}>
-          <Grid item xs={12} sm={6} md={4}>
-            <Paper sx={{ p: 3, textAlign: 'center' }}>
-              <UsersIcon sx={{ fontSize: 60, color: 'primary.main', mb: 2 }} />
-              <Typography variant="h6" gutterBottom>
-                Управление пользователями
-              </Typography>
-              <Typography variant="body2" color="textSecondary" paragraph>
-                Просмотр, добавление и удаление пользователей системы
-              </Typography>
-              <Button variant="contained" color="primary">
-                Перейти
-              </Button>
-            </Paper>
-          </Grid>
-          <Grid item xs={12} sm={6} md={4}>
-            <Paper sx={{ p: 3, textAlign: 'center' }}>
-              <StoreIcon sx={{ fontSize: 60, color: 'secondary.main', mb: 2 }} />
-              <Typography variant="h6" gutterBottom>
-                Управление магазинами
-              </Typography>
-              <Typography variant="body2" color="textSecondary" paragraph>
-                Просмотр и модерация подключенных магазинов
-              </Typography>
-              <Button variant="contained" color="secondary">
-                Перейти
-              </Button>
-            </Paper>
-          </Grid>
-          <Grid item xs={12} sm={6} md={4}>
-            <Paper sx={{ p: 3, textAlign: 'center' }}>
-              <ProductsIcon sx={{ fontSize: 60, color: 'success.main', mb: 2 }} />
-              <Typography variant="h6" gutterBottom>
-                Управление товарами
-              </Typography>
-              <Typography variant="body2" color="textSecondary" paragraph>
-                Просмотр и анализ товаров в системе
-              </Typography>
-              <Button variant="contained" color="success">
-                Перейти
-              </Button>
-            </Paper>
-          </Grid>
-        </Grid>
+        <Button
+          variant="outlined"
+          startIcon={<LogoutIcon />}
+          onClick={handleLogout}
+          sx={{
+            color: 'white',
+            borderColor: 'rgba(255, 255, 255, 0.3)',
+            '&:hover': {
+              borderColor: 'rgba(255, 255, 255, 0.5)',
+              background: 'rgba(255, 255, 255, 0.05)',
+            },
+            px: 2,
+            py: 1,
+          }}
+        >
+          Выйти
+        </Button>
       </Box>
+
+      {/* Статистика */}
+      <Grid container spacing={3} sx={{ mb: 4 }}>
+        <Grid item xs={12} sm={6} md={3}>
+          <StatCard
+            title="Пользователи"
+            value={stats.users}
+            icon={<UsersIcon sx={{ fontSize: 40, color: '#f59e0b', mx: 'auto' }} />}
+            color="primary.main"
+            subtitle="Всего зарегистрировано"
+          />
+        </Grid>
+        <Grid item xs={12} sm={6} md={3}>
+          <StatCard
+            title="Магазины"
+            value={stats.stores}
+            icon={<StoreIcon sx={{ fontSize: 40, color: '#3b82f6', mx: 'auto' }} />}
+            color="secondary.main"
+            subtitle="Всего подключено"
+          />
+        </Grid>
+        <Grid item xs={12} sm={6} md={3}>
+          <StatCard
+            title="Товары"
+            value={stats.products}
+            icon={<ProductsIcon sx={{ fontSize: 40, color: '#10b981', mx: 'auto' }} />}
+            color="success.main"
+            subtitle="Всего в системе"
+          />
+        </Grid>
+        <Grid item xs={12} sm={6} md={3}>
+          <StatCard
+            title="Сопоставления"
+            value={stats.mappings}
+            icon={<MappingsIcon sx={{ fontSize: 40, color: '#8b5cf6', mx: 'auto' }} />}
+            color="info.main"
+            subtitle="Всего создано"
+          />
+        </Grid>
+      </Grid>
+
+      {/* Контент */}
+      <Box
+        sx={{
+          p: 3,
+          borderRadius: '16px',
+          background: 'rgba(255, 255, 255, 0.05)',
+          border: '1px solid rgba(255, 255, 255, 0.1)',
+          backdropFilter: 'blur(10px)',
+          mb: 4,
+        }}
+      >
+        <Typography variant="h6" sx={{ color: 'white', fontWeight: 'bold', mb: 2 }}>
+          Управление системой
+        </Typography>
+        <Typography sx={{ color: 'rgba(255, 255, 255, 0.8)' }}>
+          Добро пожаловать в админ-панель системы отслеживания маркетплейсов.
+          Здесь вы можете управлять пользователями, просматривать статистику и настраивать систему.
+        </Typography>
+      </Box>
+
+      {/* Дополнительные действия */}
+      <Grid container spacing={3}>
+        <Grid item xs={12} sm={6} md={4}>
+          <Box
+            sx={{
+              p: 3,
+              borderRadius: '16px',
+              background: 'rgba(255, 255, 255, 0.05)',
+              border: '1px solid rgba(255, 255, 255, 0.1)',
+              backdropFilter: 'blur(10px)',
+              textAlign: 'center',
+              transition: 'all 0.3s ease',
+              '&:hover': {
+                transform: 'translateY(-5px)',
+                background: 'rgba(255, 255, 255, 0.08)',
+              }
+            }}
+          >
+            <UsersIcon sx={{ fontSize: 60, color: '#f59e0b', mx: 'auto', mb: 2 }} />
+            <Typography variant="h6" sx={{ color: 'white', mb: 1 }}>
+              Управление пользователями
+            </Typography>
+            <Typography sx={{ color: 'rgba(255, 255, 255, 0.7)', mb: 2 }}>
+              Просмотр, добавление и удаление пользователей системы
+            </Typography>
+            <Button
+              variant="contained"
+              sx={{
+                background: 'linear-gradient(135deg, #f59e0b, #fbbf24)',
+                textTransform: 'none',
+                fontWeight: 'bold',
+                px: 3,
+                py: 1,
+                '&:hover': {
+                  background: 'linear-gradient(135deg, #d97706, #f59e0b)',
+                }
+              }}
+            >
+              Перейти
+            </Button>
+          </Box>
+        </Grid>
+        <Grid item xs={12} sm={6} md={4}>
+          <Box
+            sx={{
+              p: 3,
+              borderRadius: '16px',
+              background: 'rgba(255, 255, 255, 0.05)',
+              border: '1px solid rgba(255, 255, 255, 0.1)',
+              backdropFilter: 'blur(10px)',
+              textAlign: 'center',
+              transition: 'all 0.3s ease',
+              '&:hover': {
+                transform: 'translateY(-5px)',
+                background: 'rgba(255, 255, 255, 0.08)',
+              }
+            }}
+          >
+            <StoreIcon sx={{ fontSize: 60, color: '#3b82f6', mx: 'auto', mb: 2 }} />
+            <Typography variant="h6" sx={{ color: 'white', mb: 1 }}>
+              Управление магазинами
+            </Typography>
+            <Typography sx={{ color: 'rgba(255, 255, 255, 0.7)', mb: 2 }}>
+              Просмотр и модерация подключенных магазинов
+            </Typography>
+            <Button
+              variant="contained"
+              sx={{
+                background: 'linear-gradient(135deg, #3b82f6, #60a5fa)',
+                textTransform: 'none',
+                fontWeight: 'bold',
+                px: 3,
+                py: 1,
+                '&:hover': {
+                  background: 'linear-gradient(135deg, #2563eb, #3b82f6)',
+                }
+              }}
+            >
+              Перейти
+            </Button>
+          </Box>
+        </Grid>
+        <Grid item xs={12} sm={6} md={4}>
+          <Box
+            sx={{
+              p: 3,
+              borderRadius: '16px',
+              background: 'rgba(255, 255, 255, 0.05)',
+              border: '1px solid rgba(255, 255, 255, 0.1)',
+              backdropFilter: 'blur(10px)',
+              textAlign: 'center',
+              transition: 'all 0.3s ease',
+              '&:hover': {
+                transform: 'translateY(-5px)',
+                background: 'rgba(255, 255, 255, 0.08)',
+              }
+            }}
+          >
+            <ProductsIcon sx={{ fontSize: 60, color: '#10b981', mx: 'auto', mb: 2 }} />
+            <Typography variant="h6" sx={{ color: 'white', mb: 1 }}>
+              Управление товарами
+            </Typography>
+            <Typography sx={{ color: 'rgba(255, 255, 255, 0.7)', mb: 2 }}>
+              Просмотр и анализ товаров в системе
+            </Typography>
+            <Button
+              variant="contained"
+              sx={{
+                background: 'linear-gradient(135deg, #10b981, #34d399)',
+                textTransform: 'none',
+                fontWeight: 'bold',
+                px: 3,
+                py: 1,
+                '&:hover': {
+                  background: 'linear-gradient(135deg, #059669, #10b981)',
+                }
+              }}
+            >
+              Перейти
+            </Button>
+          </Box>
+        </Grid>
+      </Grid>
     </Box>
   );
 }

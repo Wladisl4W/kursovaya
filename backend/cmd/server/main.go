@@ -1,7 +1,9 @@
 package main
 
 import (
+	"fmt"
 	"log"
+	"os"
 	"kursovaya_backend/internal/config"
 	"kursovaya_backend/internal/database"
 	"kursovaya_backend/internal/service"
@@ -11,6 +13,11 @@ import (
 )
 
 func main() {
+	// Set Gin mode based on environment
+	if os.Getenv("GIN_MODE") == "release" {
+		gin.SetMode(gin.ReleaseMode)
+	}
+
 	// Загружаем конфигурацию
 	cfg := config.Load()
 
@@ -35,8 +42,9 @@ func main() {
 	routes.SetupRoutes(r, cfg)
 
 	// Запускаем сервер
-	log.Println("Server starting on port", cfg.Port)
-	if err := r.Run(":" + cfg.Port); err != nil {
-		log.Fatal("Failed to start server:", err)
+	port := ":" + cfg.Port
+	log.Printf("Server starting on port %s", cfg.Port)
+	if err := r.Run(port); err != nil {
+		log.Fatal(fmt.Sprintf("Failed to start server on port %s:", port), err)
 	}
 }

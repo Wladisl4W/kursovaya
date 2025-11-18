@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState } from 'react';
+import React, { createContext, useContext, useState, useEffect } from 'react';
 import { authAPI } from '../services/api';
 
 const AuthContext = createContext();
@@ -10,6 +10,36 @@ export const useAuth = () => {
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [token, setToken] = useState(localStorage.getItem('token') || null);
+  const [loading, setLoading] = useState(true);
+
+  // Load user info from token if available
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    if (token) {
+      // In a real app, you would validate the token and fetch user data
+      // For now, we'll just update the state
+      try {
+        // Extract user data from token (this is simplified)
+        const base64Url = token.split('.')[1];
+        const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+        const jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
+          return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+        }).join(''));
+        const userData = JSON.parse(jsonPayload);
+
+        setUser({
+          id: userData.user_id,
+          email: userData.email
+        });
+      } catch (e) {
+        console.error('Error parsing token:', e);
+        // If token is invalid, clear it
+        localStorage.removeItem('token');
+        localStorage.removeItem('auth-token');
+      }
+    }
+    setLoading(false);
+  }, []);
 
   const login = async (email, password) => {
     try {
@@ -29,6 +59,7 @@ export const AuthProvider = ({ children }) => {
 
       return { success: true };
     } catch (error) {
+      console.error('Login error:', error);
       if (error.response) {
         // Сервер вернул ошибку
         return {
@@ -70,6 +101,7 @@ export const AuthProvider = ({ children }) => {
 
       return { success: true };
     } catch (error) {
+      console.error('Registration error:', error);
       if (error.response) {
         // Сервер вернул ошибку
         return {
@@ -105,6 +137,7 @@ export const AuthProvider = ({ children }) => {
   const value = {
     user,
     token,
+    loading,
     login,
     register,
     logout
@@ -112,7 +145,7 @@ export const AuthProvider = ({ children }) => {
 
   return (
     <AuthContext.Provider value={value}>
-      {children}
+      {!loading && children}
     </AuthContext.Provider>
   );
 };

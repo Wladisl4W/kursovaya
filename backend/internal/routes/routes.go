@@ -27,8 +27,8 @@ func SetupRoutes(r *gin.Engine, cfg *config.Config) {
 		corsConfig.AllowOrigins = []string{"http://localhost:3000", "http://localhost:8080", "http://127.0.0.1:3000", "http://127.0.0.1:8080"}
 	}
 	corsConfig.AllowCredentials = true
-	corsConfig.AllowHeaders = []string{"*"}
-	corsConfig.AllowMethods = []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"}
+	corsConfig.AllowHeaders = []string{"Origin", "Content-Length", "Content-Type", "Authorization"}
+	corsConfig.AllowMethods = []string{"GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"}
 	r.Use(cors.New(corsConfig))
 
 	// Создаем хендлеры
@@ -49,7 +49,7 @@ func SetupRoutes(r *gin.Engine, cfg *config.Config) {
 	// Эндпоинт для проверки состояния (health check)
 	r.GET("/health", func(c *gin.Context) {
 		c.JSON(200, gin.H{
-			"status": "healthy",
+			"status":  "healthy",
 			"service": "marketplace-tracker-backend",
 		})
 	})

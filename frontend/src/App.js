@@ -35,39 +35,57 @@ function App() {
           <Routes>
             <Route path="/login" element={
               <PublicRoute>
-                <LoginPage />
+                <Layout>
+                  <LoginPage />
+                </Layout>
               </PublicRoute>
             } />
             <Route path="/register" element={
               <PublicRoute>
-                <RegisterPage />
+                <Layout>
+                  <RegisterPage />
+                </Layout>
               </PublicRoute>
             } />
             <Route path="/" element={
               <PublicRoute>
-                <LoginPage />
+                <Layout>
+                  <LoginPage />
+                </Layout>
               </PublicRoute>
             } />
             <Route path="/dashboard" element={
               <ProtectedRoute>
-                <DashboardPage />
+                <Layout>
+                  <DashboardPage />
+                </Layout>
               </ProtectedRoute>
             } />
             <Route path="/dashboard/*" element={
               <ProtectedRoute>
-                <DashboardPage />
+                <Layout>
+                  <DashboardPage />
+                </Layout>
               </ProtectedRoute>
             } />
             {/* Админка теперь имеет отдельный маршрут с собственной аутентификацией */}
-            <Route path="/admin/login" element={<AdminLoginPage />} />
+            <Route path="/admin/login" element={
+              <Layout>
+                <AdminLoginPage />
+              </Layout>
+            } />
             <Route path="/admin" element={
               <AdminProtectedRoute>
-                <AdminDashboard />
+                <Layout>
+                  <AdminDashboard />
+                </Layout>
               </AdminProtectedRoute>
             } />
             <Route path="/admin/*" element={
               <AdminProtectedRoute>
-                <AdminDashboard />
+                <Layout>
+                  <AdminDashboard />
+                </Layout>
               </AdminProtectedRoute>
             } />
           </Routes>

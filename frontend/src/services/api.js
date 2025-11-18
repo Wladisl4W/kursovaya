@@ -16,6 +16,7 @@ const api = axios.create({
   headers: {
     'Content-Type': 'application/json',
   },
+  timeout: 10000, // 10 second timeout
 });
 
 // Перехватчик запросов для добавления токена аутентификации
@@ -28,6 +29,7 @@ api.interceptors.request.use(
     return config;
   },
   (error) => {
+    console.error('Request error:', error);
     return Promise.reject(error);
   }
 );
@@ -40,8 +42,13 @@ api.interceptors.response.use(
     if (error.response?.status === 401) {
       localStorage.removeItem('token');
       localStorage.removeItem('auth-token');
-      window.location.href = '/login';
+      // Only redirect if not already on login page
+      if (window.location.pathname !== '/login' && !window.location.pathname.startsWith('/admin')) {
+        window.location.href = '/login';
+      }
     }
+    // Log error for debugging
+    console.error('API error:', error);
     return Promise.reject(error);
   }
 );
@@ -58,6 +65,7 @@ const adminApi = axios.create({
   headers: {
     'Content-Type': 'application/json',
   },
+  timeout: 10000, // 10 second timeout
 });
 
 // Перехватчик запросов для админ-аутентификации
@@ -70,6 +78,7 @@ adminApi.interceptors.request.use(
     return config;
   },
   (error) => {
+    console.error('Admin request error:', error);
     return Promise.reject(error);
   }
 );
@@ -85,6 +94,8 @@ adminApi.interceptors.response.use(
         window.location.href = '/admin/login';
       }
     }
+    // Log error for debugging
+    console.error('Admin API error:', error);
     return Promise.reject(error);
   }
 );

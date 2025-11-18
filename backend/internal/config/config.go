@@ -1,6 +1,7 @@
 package config
 
 import (
+	"log"
 	"os"
 )
 
@@ -16,6 +17,19 @@ type Config struct {
 	Port          string
 }
 
+// Validate ensures that required configuration values are set
+func (c *Config) Validate() {
+	if c.JWTSecret == "" || c.JWTSecret == "default-secret-key-change-in-production" {
+		log.Println("[WARNING] JWT_SECRET is using default value - this is insecure for production")
+	}
+	if c.EncryptionKey == "" || c.EncryptionKey == "default-encryption-key-change-in-production" {
+		log.Println("[WARNING] ENCRYPTION_KEY is using default value - this is insecure for production")
+	}
+	if c.DBPassword == "" || c.DBPassword == "password" {
+		log.Println("[WARNING] DB_PASSWORD is using default value - this is insecure for production")
+	}
+}
+
 func Load() *Config {
 	cfg := &Config{
 		DBHost:        getEnv("DB_HOST", "postgres"),
@@ -28,6 +42,9 @@ func Load() *Config {
 		AllowOrigins:  getEnv("ALLOW_ORIGINS", ""),
 		Port:          getEnv("PORT", "8080"),
 	}
+
+	// Validate configuration after loading
+	cfg.Validate()
 
 	return cfg
 }
