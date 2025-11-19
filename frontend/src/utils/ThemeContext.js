@@ -13,8 +13,8 @@ const getStoredTheme = () => {
   }
   // Определяем системную тему
   const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-  // По умолчанию используем темную тему
-  return 'dark';
+  // Возвращаем системную тему, если пользователь не выбирал сам
+  return systemPrefersDark ? 'dark' : 'light';
 };
 
 // Темы
@@ -277,14 +277,33 @@ export const ThemeProviderWrapper = ({ children }) => {
     localStorage.setItem('theme', themeMode);
   }, [themeMode]);
 
+  // Эффект для обновления темы при изменении системной настройки
+  useEffect(() => {
+    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+    const handleChange = (e) => {
+      // Обновляем тему только если пользователь не выбирал тему вручную
+      if (!localStorage.getItem('theme')) {
+        setThemeMode(e.matches ? 'dark' : 'light');
+      }
+    };
+
+    mediaQuery.addEventListener('change', handleChange);
+
+    return () => mediaQuery.removeEventListener('change', handleChange);
+  }, []);
+
   const toggleTheme = () => {
     setThemeMode((prevMode) => (prevMode === 'light' ? 'dark' : 'light'));
+  };
+
+  const setSpecificTheme = (newTheme) => {
+    setThemeMode(newTheme);
   };
 
   const theme = themeMode === 'light' ? lightTheme : darkTheme;
 
   return (
-    <ThemeContext.Provider value={{ themeMode, toggleTheme }}>
+    <ThemeContext.Provider value={{ themeMode, toggleTheme, setSpecificTheme }}>
       <ThemeProvider theme={theme}>
         <CssBaseline />
         {children}

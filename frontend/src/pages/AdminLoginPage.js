@@ -11,6 +11,8 @@ import {
 } from '@mui/material';
 import { Visibility, VisibilityOff } from '@mui/icons-material';
 import { useNavigate, Link } from 'react-router-dom';
+import { useAppDispatch } from '../redux/hooks';
+import { setAdminToken } from '../redux/slices/authSlice';
 import { adminAPI } from '../services/api';
 
 function AdminLoginPage() {
@@ -20,6 +22,7 @@ function AdminLoginPage() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const dispatch = useAppDispatch();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -29,8 +32,8 @@ function AdminLoginPage() {
     try {
       const response = await adminAPI.login(username, password);
 
-      // Сохраняем токен администратора отдельно
-      localStorage.setItem('admin_token', response.data.token);
+      // Сохраняем токен администратора в Redux-хранилище
+      dispatch(setAdminToken(response.data.token));
 
       // Перенаправляем на дашборд админки
       navigate('/admin');

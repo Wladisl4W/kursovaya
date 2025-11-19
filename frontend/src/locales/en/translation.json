@@ -1,0 +1,84 @@
+{
+  "login": {
+    "title": "Login",
+    "email": "Email",
+    "password": "Password",
+    "showPassword": "Show password",
+    "hidePassword": "Hide password",
+    "submit": "Sign in",
+    "noAccount": "Don't have an account?",
+    "signup": "Sign up",
+    "error": "Login error",
+    "success": "Login successful"
+  },
+  "register": {
+    "title": "Register",
+    "email": "Email",
+    "password": "Password",
+    "confirmPassword": "Confirm password",
+    "showPassword": "Show password",
+    "hidePassword": "Hide password",
+    "submit": "Sign up",
+    "hasAccount": "Already have an account?",
+    "login": "Sign in",
+    "passwordMismatch": "Passwords do not match",
+    "error": "Registration error",
+    "success": "Registration successful"
+  },
+  "dashboard": {
+    "title": "Dashboard",
+    "logout": "Logout",
+    "stores": {
+      "title": "Connected Stores",
+      "addStore": "Add store",
+      "noStores": "No connected stores",
+      "type": "Type",
+      "id": "ID"
+    },
+    "products": {
+      "title": "Products",
+      "noProducts": "No products to display",
+      "name": "Name",
+      "price": "Price",
+      "quantity": "Quantity"
+    },
+    "mappings": {
+      "title": "Product Mappings",
+      "noMappings": "No product mappings",
+      "name": "Name",
+      "price": "Price"
+    }
+  },
+  "admin": {
+    "login": {
+      "title": "Admin Panel",
+      "loginAsAdmin": "Log in as admin",
+      "backToLogin": "Back to login"
+    },
+    "dashboard": {
+      "title": "Admin Dashboard",
+      "stats": "Statistics",
+      "users": "Users",
+      "stores": "Stores",
+      "products": "Products",
+      "mappings": "Mappings",
+      "logout": "Log out"
+    }
+  },
+  "common": {
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "save": "Save",
+    "edit": "Edit",
+    "confirm": "Confirm",
+    "yes": "Yes",
+    "no": "No",
+    "loading": "Loading...",
+    "error": "Error",
+    "success": "Success",
+    "search": "Search...",
+    "filter": "Filter",
+    "sort": "Sort",
+    "export": "Export"
+  }
+}

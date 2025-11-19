@@ -13,14 +13,16 @@ import {
   Logout as LogoutIcon,
   Add as AddIcon
 } from '@mui/icons-material';
-import { useAuth } from '../utils/AuthContext';
+import { useAppSelector, useAppDispatch } from '../redux/hooks';
+import { logout } from '../redux/slices/authSlice';
 import AddStoreDialog from '../components/AddStoreDialog';
 import StoresList from '../components/StoresList';
 import ProductsView from '../components/ProductsView';
 import MappingsView from '../components/MappingsView';
 
 function DashboardPage() {
-  const { user, logout } = useAuth();
+  const user = useAppSelector(state => state.auth.user);
+  const dispatch = useAppDispatch();
   const [showAddStore, setShowAddStore] = useState(false);
   const [activeSection, setActiveSection] = useState(0); // 0 = магазины, 1 = товары, 2 = сопоставления
   const [stats, setStats] = useState({
@@ -46,33 +48,37 @@ function DashboardPage() {
   }, []);
 
   const handleLogout = () => {
-    logout();
-    window.location.href = '/login';
+    dispatch(logout());
   };
 
-  // Компактные кнопки для переключения между разделами
-  const SectionButton = ({ index, icon, label, isActive, onClick }) => (
-    <Button
-      variant="text"
-      startIcon={icon}
+  // Компонент карточки-переключателя
+  const StatCardWithAction = ({ index, icon, label, count, isActive, onClick, color, lightColor, darkColor }) => (
+    <Box
       onClick={onClick}
       sx={{
-        px: 3,
-        py: 1.5,
-        borderRadius: '12px',
-        textTransform: 'none',
-        fontWeight: isActive ? 'bold' : 'normal',
-        fontSize: '1rem',
-        color: isActive ? 'white' : 'rgba(255, 255, 255, 0.7)',
-        background: isActive ? 'rgba(59, 130, 246, 0.2)' : 'transparent',
-        '&:hover': {
-          background: isActive ? 'rgba(59, 130, 246, 0.3)' : 'rgba(255, 255, 255, 0.05)',
-        },
+        p: 3,
+        borderRadius: '16px',
+        background: isActive ? lightColor : 'rgba(255, 255, 255, 0.05)',
+        border: `1px solid ${isActive ? darkColor : 'rgba(255, 255, 255, 0.1)'}`,
+        backdropFilter: 'blur(10px)',
+        textAlign: 'center',
+        cursor: 'pointer',
         transition: 'all 0.3s ease',
+        '&:hover': {
+          background: isActive ? lightColor : 'rgba(255, 255, 255, 0.08)',
+          transform: 'translateY(-3px)',
+          boxShadow: '0 8px 25px rgba(0, 0, 0, 0.2)',
+        },
       }}
     >
-      {label}
-    </Button>
+      {icon}
+      <Typography variant="h4" fontWeight="bold" sx={{ color: 'white', mt: 1 }}>
+        {count}
+      </Typography>
+      <Typography sx={{ color: isActive ? 'white' : 'rgba(255, 255, 255, 0.8)' }}>
+        {label}
+      </Typography>
+    </Box>
   );
 
   return (
@@ -82,9 +88,12 @@ function DashboardPage() {
         maxWidth: 1200,
         mx: 'auto',
         p: 3,
+        display: 'flex',
+        flexDirection: 'column',
+        minHeight: '100vh',
       }}
     >
-      {/* Top bar with user info and logout */}
+      {/* Top bar with user info and logout - фиксированная высота */}
       <Box
         sx={{
           display: 'flex',
@@ -92,6 +101,7 @@ function DashboardPage() {
           alignItems: 'center',
           mb: 4,
           py: 2,
+          flexShrink: 0, // Не сжимается
         }}
       >
         <Box>
@@ -132,100 +142,57 @@ function DashboardPage() {
         </Button>
       </Box>
 
-      {/* Statistics Cards */}
-      <Grid container spacing={3} sx={{ mb: 4 }}>
+      {/* Statistics Cards - фиксированная высота */}
+      <Grid container spacing={3} sx={{ mb: 4, flexShrink: 0 }}> {/* Не сжимается */}
         <Grid item xs={12} sm={4}>
-          <Box
-            sx={{
-              p: 3,
-              borderRadius: '16px',
-              background: 'rgba(59, 130, 246, 0.15)',
-              border: '1px solid rgba(59, 130, 246, 0.2)',
-              backdropFilter: 'blur(10px)',
-              textAlign: 'center',
-            }}
-          >
-            <StoreIcon sx={{ fontSize: 40, color: '#3b82f6', mb: 1 }} />
-            <Typography variant="h4" fontWeight="bold" sx={{ color: 'white' }}>
-              {stats.stores}
-            </Typography>
-            <Typography sx={{ color: 'rgba(255, 255, 255, 0.8)' }}>Магазинов</Typography>
-          </Box>
+          <StatCardWithAction
+            index={0}
+            icon={<StoreIcon sx={{ fontSize: 40, color: '#3b82f6', mb: 1 }} />}
+            label="Магазинов"
+            count={stats.stores}
+            isActive={activeSection === 0}
+            onClick={() => setActiveSection(0)}
+            color="#3b82f6"
+            lightColor="rgba(59, 130, 246, 0.2)"
+            darkColor="rgba(59, 130, 246, 0.3)"
+          />
         </Grid>
         <Grid item xs={12} sm={4}>
-          <Box
-            sx={{
-              p: 3,
-              borderRadius: '16px',
-              background: 'rgba(16, 185, 129, 0.15)',
-              border: '1px solid rgba(16, 185, 129, 0.2)',
-              backdropFilter: 'blur(10px)',
-              textAlign: 'center',
-            }}
-          >
-            <ProductsIcon sx={{ fontSize: 40, color: '#10b981', mb: 1 }} />
-            <Typography variant="h4" fontWeight="bold" sx={{ color: 'white' }}>
-              {stats.products}
-            </Typography>
-            <Typography sx={{ color: 'rgba(255, 255, 255, 0.8)' }}>Товаров</Typography>
-          </Box>
+          <StatCardWithAction
+            index={1}
+            icon={<ProductsIcon sx={{ fontSize: 40, color: '#10b981', mb: 1 }} />}
+            label="Товаров"
+            count={stats.products}
+            isActive={activeSection === 1}
+            onClick={() => setActiveSection(1)}
+            color="#10b981"
+            lightColor="rgba(16, 185, 129, 0.2)"
+            darkColor="rgba(16, 185, 129, 0.3)"
+          />
         </Grid>
         <Grid item xs={12} sm={4}>
-          <Box
-            sx={{
-              p: 3,
-              borderRadius: '16px',
-              background: 'rgba(147, 51, 234, 0.15)',
-              border: '1px solid rgba(147, 51, 234, 0.2)',
-              backdropFilter: 'blur(10px)',
-              textAlign: 'center',
-            }}
-          >
-            <MappingsIcon sx={{ fontSize: 40, color: '#9333ea', mb: 1 }} />
-            <Typography variant="h4" fontWeight="bold" sx={{ color: 'white' }}>
-              {stats.mappings}
-            </Typography>
-            <Typography sx={{ color: 'rgba(255, 255, 255, 0.8)' }}>Сопоставлений</Typography>
-          </Box>
+          <StatCardWithAction
+            index={2}
+            icon={<MappingsIcon sx={{ fontSize: 40, color: '#9333ea', mb: 1 }} />}
+            label="Сопоставлений"
+            count={stats.mappings}
+            isActive={activeSection === 2}
+            onClick={() => setActiveSection(2)}
+            color="#9333ea"
+            lightColor="rgba(147, 51, 234, 0.2)"
+            darkColor="rgba(147, 51, 234, 0.3)"
+          />
         </Grid>
       </Grid>
 
-      {/* Navigation Tabs */}
+      {/* Content area with fixed height and scroll */}
       <Box
         sx={{
-          display: 'flex',
-          gap: 1,
-          mb: 4,
-          p: 1,
-          background: 'rgba(255, 255, 255, 0.05)',
-          borderRadius: '16px',
+          flex: 1, // Занимает оставшееся пространство
+          overflow: 'auto', // Добавляет прокрутку при необходимости
+          minWidth: 0, // Позволяет контейнеру уменьшаться до содержимого
         }}
       >
-        <SectionButton
-          index={0}
-          icon={<StoreIcon />}
-          label="Магазины"
-          isActive={activeSection === 0}
-          onClick={() => setActiveSection(0)}
-        />
-        <SectionButton
-          index={1}
-          icon={<ProductsIcon />}
-          label="Товары"
-          isActive={activeSection === 1}
-          onClick={() => setActiveSection(1)}
-        />
-        <SectionButton
-          index={2}
-          icon={<MappingsIcon />}
-          label="Сопоставления"
-          isActive={activeSection === 2}
-          onClick={() => setActiveSection(2)}
-        />
-      </Box>
-
-      {/* Content for selected tab */}
-      <Box>
         {activeSection === 0 && (
           <Box>
             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>

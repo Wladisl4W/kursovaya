@@ -5,9 +5,13 @@ import axios from 'axios';
 // Добавляем '/api' к базовому URL, так как все эндпоинты в бэкенде начинаются с '/api'
 let API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8080';
 
-// Если в URL есть '/api', удаляем его, чтобы избежать дублирования
-if (API_BASE_URL.endsWith('/api')) {
+// Если в URL есть '/api/v1', '/api' или '/v1', удаляем их, чтобы избежать дублирования
+if (API_BASE_URL.endsWith('/api/v1')) {
+  API_BASE_URL = API_BASE_URL.slice(0, -7);
+} else if (API_BASE_URL.endsWith('/api')) {
   API_BASE_URL = API_BASE_URL.slice(0, -4);
+} else if (API_BASE_URL.endsWith('/v1')) {
+  API_BASE_URL = API_BASE_URL.slice(0, -3);
 }
 
 // Создаем экземпляр axios с базовой конфигурацией

@@ -3,6 +3,7 @@ package handlers
 import (
 	"log"
 	"net/http"
+	"kursovaya_backend/internal/errors"
 	"kursovaya_backend/internal/service"
 	"kursovaya_backend/pkg/utils"
 	"github.com/gin-gonic/gin"
@@ -26,13 +27,17 @@ type AdminLoginResponse struct {
 func (h *AdminHandler) Login(c *gin.Context) {
 	var req AdminLoginRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Некорректный формат данных"})
+		appErr := errors.BadRequest("Некорректный формат данных", err.Error())
+		errors.LogAppError(appErr)
+		c.JSON(appErr.Code, gin.H{"error": appErr.Message, "details": appErr.Details})
 		return
 	}
 
 	// Валидация структуры
 	if validationErrors := utils.ValidateStruct(&req); len(validationErrors) > 0 {
-		c.JSON(http.StatusBadRequest, gin.H{"errors": validationErrors})
+		appErr := errors.ValidationError("Ошибка валидации данных", "")
+		errors.LogAppError(appErr)
+		c.JSON(appErr.Code, gin.H{"error": appErr.Message, "errors": validationErrors})
 		return
 	}
 
@@ -41,8 +46,10 @@ func (h *AdminHandler) Login(c *gin.Context) {
 
 	admin, err := service.AuthenticateAdmin(req.Username, req.Password)
 	if err != nil {
-		log.Printf("Ошибка аутентификации администратора: %v", err)
-		c.JSON(http.StatusUnauthorized, gin.H{"error": utils.LocalizeError(err)})
+		appErr := errors.Unauthorized("Ошибка аутентификации администратора", err.Error())
+		errors.LogError(err)
+		errors.LogAppError(appErr)
+		c.JSON(appErr.Code, gin.H{"error": appErr.Message, "details": appErr.Details})
 		return
 	}
 
@@ -52,8 +59,9 @@ func (h *AdminHandler) Login(c *gin.Context) {
 	// Используем тот же формат, что и для обычных пользователей
 	token, err := utils.GenerateJWT(admin.ID, "admin")
 	if err != nil {
-		log.Printf("Ошибка генерации токена для администратора: %v", err)
-		c.JSON(http.StatusInternalServerError, gin.H{"error": utils.LocalizeError(err)})
+		appErr := errors.InternalServerError("Ошибка генерации токена для администратора", err.Error())
+		errors.LogAppError(appErr)
+		c.JSON(appErr.Code, gin.H{"error": appErr.Message, "details": appErr.Details})
 		return
 	}
 

@@ -39,15 +39,7 @@ func SetupRoutes(r *gin.Engine, cfg *config.Config) {
 	storeHandler := &handlers.StoreHandler{}
 	adminManagementHandler := &handlers.AdminManagementHandler{}
 
-	// Публичные маршруты
-	public := r.Group("/api")
-	{
-		public.POST("/auth/register", authHandler.Register)
-		public.POST("/auth/login", authHandler.Login)
-		public.POST("/admin/login", adminHandler.Login) // Добавляем маршрут для аутентификации администратора
-	}
-
-	// Эндпоинт для проверки состояния (health check)
+	// Эндпоинт для проверки состояния (health check) - без версии
 	r.GET("/health", func(c *gin.Context) {
 		c.JSON(200, gin.H{
 			"status":  "healthy",
@@ -55,7 +47,65 @@ func SetupRoutes(r *gin.Engine, cfg *config.Config) {
 		})
 	})
 
-	// Защищенные маршруты (требуют JWT токен)
+	// Публичные маршруты v1
+	publicV1 := r.Group("/api/v1")
+	{
+		publicV1.POST("/auth/register", authHandler.Register)
+		publicV1.POST("/auth/login", authHandler.Login)
+		publicV1.POST("/admin/login", adminHandler.Login) // Добавляем маршрут для аутентификации администратора
+	}
+
+	// Защищенные маршруты v1 (требуют JWT токен)
+	protectedV1 := r.Group("/api/v1")
+	protectedV1.Use(middleware.AuthMiddleware())
+	{
+		protectedV1.GET("/stores", storeHandler.GetStores)
+		protectedV1.POST("/stores", storeHandler.AddStore)
+		protectedV1.DELETE("/stores/:id", storeHandler.DeleteStore)
+		protectedV1.GET("/products", productHandler.GetProducts)
+		protectedV1.GET("/products/saved", productHandler.GetSavedProducts)
+		protectedV1.GET("/mappings", mappingHandler.GetMappings)
+		protectedV1.POST("/mappings", mappingHandler.CreateMapping)
+		protectedV1.DELETE("/mappings/:id", mappingHandler.DeleteMapping)
+	}
+
+	// Админ-маршруты v1 (требуют аутентификации администратора)
+	adminV1 := r.Group("/api/v1/admin")
+	adminV1.Use(middleware.AdminAuthMiddleware())
+	{
+		// Статистика
+		adminV1.GET("/stats", adminManagementHandler.GetStats)
+
+		// Управление пользователями
+		adminV1.GET("/users", adminManagementHandler.GetUsers)
+		adminV1.GET("/users/:id", adminManagementHandler.GetUser)
+		adminV1.DELETE("/users/:id", adminManagementHandler.DeleteUser)
+
+		// Управление магазинами
+		adminV1.GET("/stores", adminManagementHandler.GetStores)
+		adminV1.GET("/stores/:id", adminManagementHandler.GetStore)
+		adminV1.DELETE("/stores/:id", adminManagementHandler.DeleteStore)
+
+		// Управление товарами
+		adminV1.GET("/products", adminManagementHandler.GetProducts)
+		adminV1.GET("/products/:id", adminManagementHandler.GetProduct)
+		adminV1.DELETE("/products/:id", adminManagementHandler.DeleteProduct)
+
+		// Управление сопоставлениями
+		adminV1.GET("/mappings", adminManagementHandler.GetMappings)
+		adminV1.GET("/mappings/:id", adminManagementHandler.GetMapping)
+		adminV1.DELETE("/mappings/:id", adminManagementHandler.DeleteMapping)
+	}
+
+	// Пути без версии для обратной совместимости (временно)
+	public := r.Group("/api")
+	{
+		public.POST("/auth/register", authHandler.Register)
+		public.POST("/auth/login", authHandler.Login)
+		public.POST("/admin/login", adminHandler.Login) // Добавляем маршрут для аутентификации администратора
+	}
+
+	// Защищенные маршруты (требуют JWT токен) - для обратной совместимости (временно)
 	protected := r.Group("/api")
 	protected.Use(middleware.AuthMiddleware())
 	{
@@ -69,7 +119,7 @@ func SetupRoutes(r *gin.Engine, cfg *config.Config) {
 		protected.DELETE("/mappings/:id", mappingHandler.DeleteMapping)
 	}
 
-	// Админ-маршруты (требуют аутентификации администратора)
+	// Админ-маршруты (требуют аутентификации администратора) - для обратной совместимости (временно)
 	admin := r.Group("/api/admin")
 	admin.Use(middleware.AdminAuthMiddleware())
 	{

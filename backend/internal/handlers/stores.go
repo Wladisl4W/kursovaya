@@ -5,6 +5,7 @@ import (
 	"strconv"
 
 	"github.com/gin-gonic/gin"
+	"kursovaya_backend/internal/errors"
 	"kursovaya_backend/internal/service"
 )
 
@@ -14,13 +15,17 @@ type StoreHandler struct{}
 func (h *StoreHandler) GetStores(c *gin.Context) {
 	userID, exists := c.Get("user_id")
 	if !exists {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Не авторизован"})
+		appErr := errors.Unauthorized("Не авторизован", "")
+		errors.LogAppError(appErr)
+		c.JSON(appErr.Code, gin.H{"error": appErr.Message, "details": appErr.Details})
 		return
 	}
 
 	stores, err := service.GetStoresByUser(userID.(int))
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Ошибка получения магазинов"})
+		appErr := errors.InternalServerError("Ошибка получения магазинов", err.Error())
+		errors.LogAppError(appErr)
+		c.JSON(appErr.Code, gin.H{"error": appErr.Message, "details": appErr.Details})
 		return
 	}
 
@@ -31,7 +36,9 @@ func (h *StoreHandler) GetStores(c *gin.Context) {
 func (h *StoreHandler) AddStore(c *gin.Context) {
 	userID, exists := c.Get("user_id")
 	if !exists {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Не авторизован"})
+		appErr := errors.Unauthorized("Не авторизован", "")
+		errors.LogAppError(appErr)
+		c.JSON(appErr.Code, gin.H{"error": appErr.Message, "details": appErr.Details})
 		return
 	}
 
@@ -41,13 +48,17 @@ func (h *StoreHandler) AddStore(c *gin.Context) {
 	}
 
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Неправильный формат данных"})
+		appErr := errors.BadRequest("Неправильный формат данных", err.Error())
+		errors.LogAppError(appErr)
+		c.JSON(appErr.Code, gin.H{"error": appErr.Message, "details": appErr.Details})
 		return
 	}
 
 	store, err := service.AddStore(userID.(int), req.Type, req.APIToken)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		appErr := errors.InternalServerError("Ошибка добавления магазина", err.Error())
+		errors.LogAppError(appErr)
+		c.JSON(appErr.Code, gin.H{"error": appErr.Message, "details": appErr.Details})
 		return
 	}
 
@@ -58,23 +69,31 @@ func (h *StoreHandler) AddStore(c *gin.Context) {
 func (h *StoreHandler) DeleteStore(c *gin.Context) {
 	userID, exists := c.Get("user_id")
 	if !exists {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Не авторизован"})
+		appErr := errors.Unauthorized("Не авторизован", "")
+		errors.LogAppError(appErr)
+		c.JSON(appErr.Code, gin.H{"error": appErr.Message, "details": appErr.Details})
 		return
 	}
 
 	storeID, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Некорректный ID магазина"})
+		appErr := errors.BadRequest("Некорректный ID магазина", err.Error())
+		errors.LogAppError(appErr)
+		c.JSON(appErr.Code, gin.H{"error": appErr.Message, "details": appErr.Details})
 		return
 	}
 
 	err = service.DeleteStore(storeID, userID.(int))
 	if err != nil {
 		if err.Error() == "магазин не найден или не принадлежит пользователю" {
-			c.JSON(http.StatusForbidden, gin.H{"error": err.Error()})
+			appErr := errors.Forbidden("Магазин не найден или не принадлежит пользователю", err.Error())
+			errors.LogAppError(appErr)
+			c.JSON(appErr.Code, gin.H{"error": appErr.Message, "details": appErr.Details})
 			return
 		}
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Ошибка удаления магазина"})
+		appErr := errors.InternalServerError("Ошибка удаления магазина", err.Error())
+		errors.LogAppError(appErr)
+		c.JSON(appErr.Code, gin.H{"error": appErr.Message, "details": appErr.Details})
 		return
 	}
 

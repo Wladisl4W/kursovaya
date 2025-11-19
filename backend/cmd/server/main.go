@@ -6,6 +6,7 @@ import (
 	"os"
 	"kursovaya_backend/internal/config"
 	"kursovaya_backend/internal/database"
+	"kursovaya_backend/internal/handlers"
 	"kursovaya_backend/internal/service"
 	"kursovaya_backend/internal/routes"
 	"kursovaya_backend/pkg/utils"
@@ -37,6 +38,9 @@ func main() {
 
 	// Создаем Gin роутер
 	r := gin.Default()
+
+	// Добавляем глобальный обработчик ошибок
+	r.Use(handlers.GlobalErrorHandler())
 
 	// Подключаем маршруты
 	routes.SetupRoutes(r, cfg)

@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"strconv"
 	"kursovaya_backend/internal/database"
+	"kursovaya_backend/internal/errors"
 	"kursovaya_backend/internal/service"
 	"github.com/gin-gonic/gin"
 )
@@ -61,25 +62,33 @@ func (h *MappingHandler) GetMappings(c *gin.Context) {
 	// Получаем ID пользователя из контекста (после аутентификации)
 	userID, exists := c.Get("user_id")
 	if !exists {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Пользователь не найден в контексте"})
+		appErr := errors.InternalServerError("Пользователь не найден в контексте", "User not found in context")
+		errors.LogAppError(appErr)
+		c.JSON(appErr.Code, gin.H{"error": appErr.Message, "details": appErr.Details})
 		return
 	}
 
 	userIDInt, ok := userID.(int)
 	if !ok {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Ошибка получения ID пользователя: неверный тип"})
+		appErr := errors.InternalServerError("Ошибка получения ID пользователя", "User ID type is incorrect")
+		errors.LogAppError(appErr)
+		c.JSON(appErr.Code, gin.H{"error": appErr.Message, "details": appErr.Details})
 		return
 	}
 
 	if userIDInt <= 0 {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Некорректный ID пользователя"})
+		appErr := errors.BadRequest("Некорректный ID пользователя", "User ID must be positive")
+		errors.LogAppError(appErr)
+		c.JSON(appErr.Code, gin.H{"error": appErr.Message, "details": appErr.Details})
 		return
 	}
 
 	// Получаем сопоставления пользователя из базы данных
 	mappings, err := h.mappingService.GetMappingsByUser(userIDInt)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Ошибка получения сопоставлений: " + err.Error()})
+		appErr := errors.InternalServerError("Ошибка получения сопоставлений", err.Error())
+		errors.LogAppError(appErr)
+		c.JSON(appErr.Code, gin.H{"error": appErr.Message, "details": appErr.Details})
 		return
 	}
 
@@ -90,7 +99,8 @@ func (h *MappingHandler) GetMappings(c *gin.Context) {
 		product1, err := h.getProductDetail(mapping.Product1ID)
 		if err != nil {
 			// Вместо возврата ошибки, логируем и продолжаем с пустым значением
-			fmt.Printf("Ошибка получения информации о товаре 1 (ID: %d): %v\n", mapping.Product1ID, err)
+			appErr := errors.InternalServerError("Ошибка получения информации о товаре 1", err.Error())
+			errors.LogAppError(appErr)
 			product1 = ProductDetail{
 				ID: mapping.Product1ID, // Указываем ID, чтобы пользователь знал, какой товар не удалось загрузить
 				Name: "Ошибка загрузки товара",
@@ -101,7 +111,8 @@ func (h *MappingHandler) GetMappings(c *gin.Context) {
 		product2, err := h.getProductDetail(mapping.Product2ID)
 		if err != nil {
 			// Вместо возврата ошибки, логируем и продолжаем с пустым значением
-			fmt.Printf("Ошибка получения информации о товаре 2 (ID: %d): %v\n", mapping.Product2ID, err)
+			appErr := errors.InternalServerError("Ошибка получения информации о товаре 2", err.Error())
+			errors.LogAppError(appErr)
 			product2 = ProductDetail{
 				ID: mapping.Product2ID, // Указываем ID, чтобы пользователь знал, какой товар не удалось загрузить
 				Name: "Ошибка загрузки товара",
@@ -127,7 +138,7 @@ func (h *MappingHandler) getProductDetail(productID int) (ProductDetail, error) 
 
 	// Валидация ID продукта
 	if productID <= 0 {
-		return ProductDetail{}, fmt.Errorf("некорректный ID товара")
+		return ProductDetail{}, errors.BadRequest("Некорректный ID товара", "Product ID must be positive").Error()
 	}
 
 	row := h.db.QueryRow(
@@ -138,9 +149,9 @@ func (h *MappingHandler) getProductDetail(productID int) (ProductDetail, error) 
 	err := row.Scan(&product.ID, &product.StoreID, &product.ExternalID, &product.Name, &product.Price, &product.Quantity)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return ProductDetail{}, fmt.Errorf("товар с ID %d не найден", productID)
+			return ProductDetail{}, errors.NotFound(fmt.Sprintf("товар с ID %d не найден", productID), "").Error()
 		}
-		return ProductDetail{}, err
+		return ProductDetail{}, errors.InternalServerError("Ошибка получения информации о товаре", err.Error()).Error()
 	}
 
 	return product, nil
@@ -149,46 +160,57 @@ func (h *MappingHandler) getProductDetail(productID int) (ProductDetail, error) 
 func (h *MappingHandler) CreateMapping(c *gin.Context) {
 	var req CreateMappingRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": "Некорректный формат данных",
-			"details": err.Error(),
-		})
+		appErr := errors.BadRequest("Некорректный формат данных", err.Error())
+		errors.LogAppError(appErr)
+		c.JSON(appErr.Code, gin.H{"error": appErr.Message, "details": appErr.Details})
 		return
 	}
 
 	// Валидация запроса
 	if req.Product1ID <= 0 || req.Product2ID <= 0 {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "ID товаров должны быть положительными числами"})
+		appErr := errors.BadRequest("ID товаров должны быть положительными числами", "Product IDs must be positive integers")
+		errors.LogAppError(appErr)
+		c.JSON(appErr.Code, gin.H{"error": appErr.Message, "details": appErr.Details})
 		return
 	}
 
 	if req.Product1ID == req.Product2ID {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Нельзя сопоставить товар с самим собой"})
+		appErr := errors.BadRequest("Нельзя сопоставить товар с самим собой", "Cannot map a product to itself")
+		errors.LogAppError(appErr)
+		c.JSON(appErr.Code, gin.H{"error": appErr.Message, "details": appErr.Details})
 		return
 	}
 
 	// Получаем ID пользователя из контекста
 	userID, exists := c.Get("user_id")
 	if !exists {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Пользователь не найден в контексте"})
+		appErr := errors.InternalServerError("Пользователь не найден в контексте", "User not found in context")
+		errors.LogAppError(appErr)
+		c.JSON(appErr.Code, gin.H{"error": appErr.Message, "details": appErr.Details})
 		return
 	}
 
 	userIDInt, ok := userID.(int)
 	if !ok {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Ошибка получения ID пользователя: неверный тип"})
+		appErr := errors.InternalServerError("Ошибка получения ID пользователя", "User ID type is incorrect")
+		errors.LogAppError(appErr)
+		c.JSON(appErr.Code, gin.H{"error": appErr.Message, "details": appErr.Details})
 		return
 	}
 
 	if userIDInt <= 0 {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Некорректный ID пользователя"})
+		appErr := errors.BadRequest("Некорректный ID пользователя", "User ID must be positive")
+		errors.LogAppError(appErr)
+		c.JSON(appErr.Code, gin.H{"error": appErr.Message, "details": appErr.Details})
 		return
 	}
 
 	// Создаем сопоставление
 	mapping, err := h.mappingService.CreateMapping(req.Product1ID, req.Product2ID, userIDInt)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Ошибка создания сопоставления: " + err.Error()})
+		appErr := errors.BadRequest("Ошибка создания сопоставления", err.Error())
+		errors.LogAppError(appErr)
+		c.JSON(appErr.Code, gin.H{"error": appErr.Message, "details": appErr.Details})
 		return
 	}
 
@@ -206,37 +228,49 @@ func (h *MappingHandler) DeleteMapping(c *gin.Context) {
 	mappingIDStr := c.Param("id")
 	mappingID, err := strconv.Atoi(mappingIDStr)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Некорректный ID сопоставления: " + err.Error()})
+		appErr := errors.BadRequest("Некорректный ID сопоставления", err.Error())
+		errors.LogAppError(appErr)
+		c.JSON(appErr.Code, gin.H{"error": appErr.Message, "details": appErr.Details})
 		return
 	}
 
 	if mappingID <= 0 {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "ID сопоставления должен быть положительным числом"})
+		appErr := errors.BadRequest("ID сопоставления должен быть положительным числом", "Mapping ID must be a positive integer")
+		errors.LogAppError(appErr)
+		c.JSON(appErr.Code, gin.H{"error": appErr.Message, "details": appErr.Details})
 		return
 	}
 
 	// Получаем ID пользователя из контекста
 	userID, exists := c.Get("user_id")
 	if !exists {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Пользователь не найден в контексте"})
+		appErr := errors.InternalServerError("Пользователь не найден в контексте", "User not found in context")
+		errors.LogAppError(appErr)
+		c.JSON(appErr.Code, gin.H{"error": appErr.Message, "details": appErr.Details})
 		return
 	}
 
 	userIDInt, ok := userID.(int)
 	if !ok {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Ошибка получения ID пользователя: неверный тип"})
+		appErr := errors.InternalServerError("Ошибка получения ID пользователя", "User ID type is incorrect")
+		errors.LogAppError(appErr)
+		c.JSON(appErr.Code, gin.H{"error": appErr.Message, "details": appErr.Details})
 		return
 	}
 
 	if userIDInt <= 0 {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Некорректный ID пользователя"})
+		appErr := errors.BadRequest("Некорректный ID пользователя", "User ID must be positive")
+		errors.LogAppError(appErr)
+		c.JSON(appErr.Code, gin.H{"error": appErr.Message, "details": appErr.Details})
 		return
 	}
 
 	// Удаляем сопоставление
 	err = h.mappingService.DeleteMapping(mappingID, userIDInt)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Ошибка удаления сопоставления: " + err.Error()})
+		appErr := errors.InternalServerError("Ошибка удаления сопоставления", err.Error())
+		errors.LogAppError(appErr)
+		c.JSON(appErr.Code, gin.H{"error": appErr.Message, "details": appErr.Details})
 		return
 	}
 

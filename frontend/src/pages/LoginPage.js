@@ -12,39 +12,36 @@ import {
   Collapse
 } from '@mui/material';
 import { Visibility, VisibilityOff } from '@mui/icons-material';
-import { useAuth } from '../utils/AuthContext';
+import { useDispatch, useSelector } from 'react-redux';
+import { login as loginAction } from '../redux/slices/authSlice';
 
 function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
-  const [fieldErrors, setFieldErrors] = useState({});
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
-  const { login } = useAuth();
+  const dispatch = useDispatch();
+  const { loading: authLoading, error: authError } = useSelector((state) => state.auth);
   const theme = useTheme();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
-    setFieldErrors({});
     setLoading(true);
 
-    const result = await login(email, password);
+    try {
+      const result = await dispatch(loginAction({ email, password })).unwrap();
 
-    if (result.success) {
-      navigate('/dashboard');
-    } else {
-      if (result.errors) {
-        // Ошибки валидации полей
-        setFieldErrors(result.errors);
-      } else {
-        setError(result.error);
+      if (result) {
+        navigate('/dashboard');
       }
+    } catch (err) {
+      setError(err || 'Ошибка при входе. Проверьте логин и пароль.');
+    } finally {
+      setLoading(false);
     }
-
-    setLoading(false);
   };
 
   const handleClickShowPassword = () => {
@@ -54,6 +51,9 @@ function LoginPage() {
   const handleMouseDownPassword = (event) => {
     event.preventDefault();
   };
+
+  // Объединяем ошибки из состояния и локальные
+  const displayError = authError || error;
 
   return (
     <Box
@@ -108,7 +108,7 @@ function LoginPage() {
         </Typography>
       </Box>
 
-      <Collapse in={!!error}>
+      <Collapse in={!!displayError}>
         <Alert
           severity="error"
           sx={{
@@ -119,7 +119,7 @@ function LoginPage() {
             border: '1px solid rgba(239, 68, 68, 0.2)',
           }}
         >
-          {error}
+          {displayError}
         </Alert>
       </Collapse>
 
@@ -134,8 +134,6 @@ function LoginPage() {
           autoFocus
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          error={!!fieldErrors.email}
-          helperText={fieldErrors.email || ""}
           variant="outlined"
           sx={{
             mb: 3,
@@ -184,8 +182,6 @@ function LoginPage() {
           autoComplete="current-password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-          error={!!fieldErrors.password}
-          helperText={fieldErrors.password || ""}
           variant="outlined"
           sx={{
             mb: 3,
@@ -263,9 +259,9 @@ function LoginPage() {
               color: 'rgba(255, 255, 255, 0.5)',
             }
           }}
-          disabled={loading}
+          disabled={loading || authLoading}
         >
-          {loading ? 'Вход...' : 'Войти'}
+          {loading || authLoading ? 'Вход...' : 'Войти'}
         </Button>
 
         <Typography

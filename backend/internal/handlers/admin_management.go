@@ -7,6 +7,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"kursovaya_backend/internal/database"
+	"kursovaya_backend/internal/errors"
 	"kursovaya_backend/internal/models"
 )
 
@@ -25,32 +26,36 @@ func (h *AdminManagementHandler) GetStats(c *gin.Context) {
 	// Get user count
 	err := database.DB.QueryRow("SELECT COUNT(*) FROM users").Scan(&stats.Users)
 	if err != nil {
-		log.Printf("Error getting user count: %v", err)
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get user statistics"})
+		appErr := errors.InternalServerError("Failed to get user statistics", err.Error())
+		errors.LogAppError(appErr)
+		c.JSON(appErr.Code, gin.H{"error": appErr.Message, "details": appErr.Details})
 		return
 	}
 
 	// Get store count
 	err = database.DB.QueryRow("SELECT COUNT(*) FROM stores").Scan(&stats.Stores)
 	if err != nil {
-		log.Printf("Error getting store count: %v", err)
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get store statistics"})
+		appErr := errors.InternalServerError("Failed to get store statistics", err.Error())
+		errors.LogAppError(appErr)
+		c.JSON(appErr.Code, gin.H{"error": appErr.Message, "details": appErr.Details})
 		return
 	}
 
 	// Get product count
 	err = database.DB.QueryRow("SELECT COUNT(*) FROM products").Scan(&stats.Products)
 	if err != nil {
-		log.Printf("Error getting product count: %v", err)
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get product statistics"})
+		appErr := errors.InternalServerError("Failed to get product statistics", err.Error())
+		errors.LogAppError(appErr)
+		c.JSON(appErr.Code, gin.H{"error": appErr.Message, "details": appErr.Details})
 		return
 	}
 
 	// Get mapping count
 	err = database.DB.QueryRow("SELECT COUNT(*) FROM product_mappings").Scan(&stats.Mappings)
 	if err != nil {
-		log.Printf("Error getting mapping count: %v", err)
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get mapping statistics"})
+		appErr := errors.InternalServerError("Failed to get mapping statistics", err.Error())
+		errors.LogAppError(appErr)
+		c.JSON(appErr.Code, gin.H{"error": appErr.Message, "details": appErr.Details})
 		return
 	}
 
@@ -62,8 +67,9 @@ func (h *AdminManagementHandler) GetUsers(c *gin.Context) {
 	var users []models.User
 	rows, err := database.DB.Query("SELECT id, email FROM users")
 	if err != nil {
-		log.Printf("Error getting users: %v", err)
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get users"})
+		appErr := errors.InternalServerError("Failed to get users", err.Error())
+		errors.LogAppError(appErr)
+		c.JSON(appErr.Code, gin.H{"error": appErr.Message, "details": appErr.Details})
 		return
 	}
 	defer rows.Close()
@@ -84,7 +90,9 @@ func (h *AdminManagementHandler) GetUsers(c *gin.Context) {
 func (h *AdminManagementHandler) GetUser(c *gin.Context) {
 	id, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid user ID"})
+		appErr := errors.BadRequest("Invalid user ID", err.Error())
+		errors.LogAppError(appErr)
+		c.JSON(appErr.Code, gin.H{"error": appErr.Message, "details": appErr.Details})
 		return
 	}
 
@@ -92,8 +100,9 @@ func (h *AdminManagementHandler) GetUser(c *gin.Context) {
 	err = database.DB.QueryRow("SELECT id, email FROM users WHERE id = $1", id).
 		Scan(&user.ID, &user.Email)
 	if err != nil {
-		log.Printf("Error getting user %d: %v", id, err)
-		c.JSON(http.StatusNotFound, gin.H{"error": "User not found"})
+		appErr := errors.NotFound("User not found", err.Error())
+		errors.LogAppError(appErr)
+		c.JSON(appErr.Code, gin.H{"error": appErr.Message, "details": appErr.Details})
 		return
 	}
 
@@ -105,8 +114,9 @@ func (h *AdminManagementHandler) GetStores(c *gin.Context) {
 	var stores []models.Store
 	rows, err := database.DB.Query("SELECT id, user_id, store_type FROM stores")
 	if err != nil {
-		log.Printf("Error getting stores: %v", err)
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get stores"})
+		appErr := errors.InternalServerError("Failed to get stores", err.Error())
+		errors.LogAppError(appErr)
+		c.JSON(appErr.Code, gin.H{"error": appErr.Message, "details": appErr.Details})
 		return
 	}
 	defer rows.Close()
@@ -127,7 +137,9 @@ func (h *AdminManagementHandler) GetStores(c *gin.Context) {
 func (h *AdminManagementHandler) GetStore(c *gin.Context) {
 	id, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid store ID"})
+		appErr := errors.BadRequest("Invalid store ID", err.Error())
+		errors.LogAppError(appErr)
+		c.JSON(appErr.Code, gin.H{"error": appErr.Message, "details": appErr.Details})
 		return
 	}
 
@@ -135,8 +147,9 @@ func (h *AdminManagementHandler) GetStore(c *gin.Context) {
 	err = database.DB.QueryRow("SELECT id, user_id, store_type FROM stores WHERE id = $1", id).
 		Scan(&store.ID, &store.UserID, &store.Type)
 	if err != nil {
-		log.Printf("Error getting store %d: %v", id, err)
-		c.JSON(http.StatusNotFound, gin.H{"error": "Store not found"})
+		appErr := errors.NotFound("Store not found", err.Error())
+		errors.LogAppError(appErr)
+		c.JSON(appErr.Code, gin.H{"error": appErr.Message, "details": appErr.Details})
 		return
 	}
 
@@ -148,8 +161,9 @@ func (h *AdminManagementHandler) GetProducts(c *gin.Context) {
 	var products []models.Product
 	rows, err := database.DB.Query("SELECT id, store_id, external_id, name, price, quantity FROM products")
 	if err != nil {
-		log.Printf("Error getting products: %v", err)
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get products"})
+		appErr := errors.InternalServerError("Failed to get products", err.Error())
+		errors.LogAppError(appErr)
+		c.JSON(appErr.Code, gin.H{"error": appErr.Message, "details": appErr.Details})
 		return
 	}
 	defer rows.Close()
@@ -170,7 +184,9 @@ func (h *AdminManagementHandler) GetProducts(c *gin.Context) {
 func (h *AdminManagementHandler) GetProduct(c *gin.Context) {
 	id, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid product ID"})
+		appErr := errors.BadRequest("Invalid product ID", err.Error())
+		errors.LogAppError(appErr)
+		c.JSON(appErr.Code, gin.H{"error": appErr.Message, "details": appErr.Details})
 		return
 	}
 
@@ -178,8 +194,9 @@ func (h *AdminManagementHandler) GetProduct(c *gin.Context) {
 	err = database.DB.QueryRow("SELECT id, store_id, external_id, name, price, quantity FROM products WHERE id = $1", id).
 		Scan(&product.ID, &product.StoreID, &product.ExternalID, &product.Name, &product.Price, &product.Quantity)
 	if err != nil {
-		log.Printf("Error getting product %d: %v", id, err)
-		c.JSON(http.StatusNotFound, gin.H{"error": "Product not found"})
+		appErr := errors.NotFound("Product not found", err.Error())
+		errors.LogAppError(appErr)
+		c.JSON(appErr.Code, gin.H{"error": appErr.Message, "details": appErr.Details})
 		return
 	}
 
@@ -191,8 +208,9 @@ func (h *AdminManagementHandler) GetMappings(c *gin.Context) {
 	var mappings []models.ProductMapping
 	rows, err := database.DB.Query("SELECT id, product1_id, product2_id, user_id FROM product_mappings")
 	if err != nil {
-		log.Printf("Error getting mappings: %v", err)
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get mappings"})
+		appErr := errors.InternalServerError("Failed to get mappings", err.Error())
+		errors.LogAppError(appErr)
+		c.JSON(appErr.Code, gin.H{"error": appErr.Message, "details": appErr.Details})
 		return
 	}
 	defer rows.Close()
@@ -213,7 +231,9 @@ func (h *AdminManagementHandler) GetMappings(c *gin.Context) {
 func (h *AdminManagementHandler) GetMapping(c *gin.Context) {
 	id, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid mapping ID"})
+		appErr := errors.BadRequest("Invalid mapping ID", err.Error())
+		errors.LogAppError(appErr)
+		c.JSON(appErr.Code, gin.H{"error": appErr.Message, "details": appErr.Details})
 		return
 	}
 
@@ -221,8 +241,9 @@ func (h *AdminManagementHandler) GetMapping(c *gin.Context) {
 	err = database.DB.QueryRow("SELECT id, product1_id, product2_id, user_id FROM product_mappings WHERE id = $1", id).
 		Scan(&mapping.ID, &mapping.Product1ID, &mapping.Product2ID, &mapping.UserID)
 	if err != nil {
-		log.Printf("Error getting mapping %d: %v", id, err)
-		c.JSON(http.StatusNotFound, gin.H{"error": "Mapping not found"})
+		appErr := errors.NotFound("Mapping not found", err.Error())
+		errors.LogAppError(appErr)
+		c.JSON(appErr.Code, gin.H{"error": appErr.Message, "details": appErr.Details})
 		return
 	}
 
@@ -233,7 +254,9 @@ func (h *AdminManagementHandler) GetMapping(c *gin.Context) {
 func (h *AdminManagementHandler) DeleteUser(c *gin.Context) {
 	id, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid user ID"})
+		appErr := errors.BadRequest("Invalid user ID", err.Error())
+		errors.LogAppError(appErr)
+		c.JSON(appErr.Code, gin.H{"error": appErr.Message, "details": appErr.Details})
 		return
 	}
 
@@ -241,20 +264,25 @@ func (h *AdminManagementHandler) DeleteUser(c *gin.Context) {
 	var exists int
 	err = database.DB.QueryRow("SELECT COUNT(*) FROM users WHERE id = $1", id).Scan(&exists)
 	if err != nil || exists == 0 {
-		c.JSON(http.StatusNotFound, gin.H{"error": "User not found"})
+		appErr := errors.NotFound("User not found", err.Error())
+		errors.LogAppError(appErr)
+		c.JSON(appErr.Code, gin.H{"error": appErr.Message, "details": appErr.Details})
 		return
 	}
 
 	// Delete the user
 	result, err := database.DB.Exec("DELETE FROM users WHERE id = $1", id)
 	if err != nil {
-		log.Printf("Error deleting user %d: %v", id, err)
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to delete user"})
+		appErr := errors.InternalServerError("Failed to delete user", err.Error())
+		errors.LogAppError(appErr)
+		c.JSON(appErr.Code, gin.H{"error": appErr.Message, "details": appErr.Details})
 		return
 	}
 
 	if rowsAffected, err := result.RowsAffected(); err != nil || rowsAffected == 0 {
-		c.JSON(http.StatusNotFound, gin.H{"error": "User not found"})
+		appErr := errors.NotFound("User not found", err.Error())
+		errors.LogAppError(appErr)
+		c.JSON(appErr.Code, gin.H{"error": appErr.Message, "details": appErr.Details})
 		return
 	}
 
@@ -265,7 +293,9 @@ func (h *AdminManagementHandler) DeleteUser(c *gin.Context) {
 func (h *AdminManagementHandler) DeleteStore(c *gin.Context) {
 	id, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid store ID"})
+		appErr := errors.BadRequest("Invalid store ID", err.Error())
+		errors.LogAppError(appErr)
+		c.JSON(appErr.Code, gin.H{"error": appErr.Message, "details": appErr.Details})
 		return
 	}
 
@@ -273,20 +303,25 @@ func (h *AdminManagementHandler) DeleteStore(c *gin.Context) {
 	var exists int
 	err = database.DB.QueryRow("SELECT COUNT(*) FROM stores WHERE id = $1", id).Scan(&exists)
 	if err != nil || exists == 0 {
-		c.JSON(http.StatusNotFound, gin.H{"error": "Store not found"})
+		appErr := errors.NotFound("Store not found", err.Error())
+		errors.LogAppError(appErr)
+		c.JSON(appErr.Code, gin.H{"error": appErr.Message, "details": appErr.Details})
 		return
 	}
 
 	// Delete the store
 	result, err := database.DB.Exec("DELETE FROM stores WHERE id = $1", id)
 	if err != nil {
-		log.Printf("Error deleting store %d: %v", id, err)
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to delete store"})
+		appErr := errors.InternalServerError("Failed to delete store", err.Error())
+		errors.LogAppError(appErr)
+		c.JSON(appErr.Code, gin.H{"error": appErr.Message, "details": appErr.Details})
 		return
 	}
 
 	if rowsAffected, err := result.RowsAffected(); err != nil || rowsAffected == 0 {
-		c.JSON(http.StatusNotFound, gin.H{"error": "Store not found"})
+		appErr := errors.NotFound("Store not found", err.Error())
+		errors.LogAppError(appErr)
+		c.JSON(appErr.Code, gin.H{"error": appErr.Message, "details": appErr.Details})
 		return
 	}
 
@@ -297,7 +332,9 @@ func (h *AdminManagementHandler) DeleteStore(c *gin.Context) {
 func (h *AdminManagementHandler) DeleteProduct(c *gin.Context) {
 	id, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid product ID"})
+		appErr := errors.BadRequest("Invalid product ID", err.Error())
+		errors.LogAppError(appErr)
+		c.JSON(appErr.Code, gin.H{"error": appErr.Message, "details": appErr.Details})
 		return
 	}
 
@@ -305,20 +342,25 @@ func (h *AdminManagementHandler) DeleteProduct(c *gin.Context) {
 	var exists int
 	err = database.DB.QueryRow("SELECT COUNT(*) FROM products WHERE id = $1", id).Scan(&exists)
 	if err != nil || exists == 0 {
-		c.JSON(http.StatusNotFound, gin.H{"error": "Product not found"})
+		appErr := errors.NotFound("Product not found", err.Error())
+		errors.LogAppError(appErr)
+		c.JSON(appErr.Code, gin.H{"error": appErr.Message, "details": appErr.Details})
 		return
 	}
 
 	// Delete the product
 	result, err := database.DB.Exec("DELETE FROM products WHERE id = $1", id)
 	if err != nil {
-		log.Printf("Error deleting product %d: %v", id, err)
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to delete product"})
+		appErr := errors.InternalServerError("Failed to delete product", err.Error())
+		errors.LogAppError(appErr)
+		c.JSON(appErr.Code, gin.H{"error": appErr.Message, "details": appErr.Details})
 		return
 	}
 
 	if rowsAffected, err := result.RowsAffected(); err != nil || rowsAffected == 0 {
-		c.JSON(http.StatusNotFound, gin.H{"error": "Product not found"})
+		appErr := errors.NotFound("Product not found", err.Error())
+		errors.LogAppError(appErr)
+		c.JSON(appErr.Code, gin.H{"error": appErr.Message, "details": appErr.Details})
 		return
 	}
 
@@ -329,7 +371,9 @@ func (h *AdminManagementHandler) DeleteProduct(c *gin.Context) {
 func (h *AdminManagementHandler) DeleteMapping(c *gin.Context) {
 	id, err := strconv.Atoi(c.Param("id"))
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid mapping ID"})
+		appErr := errors.BadRequest("Invalid mapping ID", err.Error())
+		errors.LogAppError(appErr)
+		c.JSON(appErr.Code, gin.H{"error": appErr.Message, "details": appErr.Details})
 		return
 	}
 
@@ -337,20 +381,25 @@ func (h *AdminManagementHandler) DeleteMapping(c *gin.Context) {
 	var exists int
 	err = database.DB.QueryRow("SELECT COUNT(*) FROM product_mappings WHERE id = $1", id).Scan(&exists)
 	if err != nil || exists == 0 {
-		c.JSON(http.StatusNotFound, gin.H{"error": "Mapping not found"})
+		appErr := errors.NotFound("Mapping not found", err.Error())
+		errors.LogAppError(appErr)
+		c.JSON(appErr.Code, gin.H{"error": appErr.Message, "details": appErr.Details})
 		return
 	}
 
 	// Delete the mapping
 	result, err := database.DB.Exec("DELETE FROM product_mappings WHERE id = $1", id)
 	if err != nil {
-		log.Printf("Error deleting mapping %d: %v", id, err)
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to delete mapping"})
+		appErr := errors.InternalServerError("Failed to delete mapping", err.Error())
+		errors.LogAppError(appErr)
+		c.JSON(appErr.Code, gin.H{"error": appErr.Message, "details": appErr.Details})
 		return
 	}
 
 	if rowsAffected, err := result.RowsAffected(); err != nil || rowsAffected == 0 {
-		c.JSON(http.StatusNotFound, gin.H{"error": "Mapping not found"})
+		appErr := errors.NotFound("Mapping not found", err.Error())
+		errors.LogAppError(appErr)
+		c.JSON(appErr.Code, gin.H{"error": appErr.Message, "details": appErr.Details})
 		return
 	}
 

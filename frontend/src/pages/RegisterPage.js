@@ -6,54 +6,75 @@ import {
   TextField,
   Button,
   Alert,
-  useTheme,
+  InputAdornment,
+  IconButton,
   Collapse
 } from '@mui/material';
-import { useAuth } from '../utils/AuthContext';
+import { Visibility, VisibilityOff } from '@mui/icons-material';
+import { useDispatch, useSelector } from 'react-redux';
+import { register as registerAction } from '../redux/slices/authSlice';
 
 function RegisterPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [error, setError] = useState('');
-  const [fieldErrors, setFieldErrors] = useState({});
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
-  const { register } = useAuth();
-  const theme = useTheme();
+  const dispatch = useDispatch();
+  const { loading: authLoading, error: authError } = useSelector((state) => state.auth);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setError('');
 
+    // Проверяем совпадение паролей
     if (password !== confirmPassword) {
       setError('Пароли не совпадают');
       return;
     }
 
-    setError('');
-    setFieldErrors({});
-    setLoading(true);
-
-    const result = await register(email, password);
-
-    if (result.success) {
-      // Проверяем, является ли пользователь администратором
-      if (email === 'admin@example.com' || email === 'feed45537@gmail.com') {
-        navigate('/admin');
-      } else {
-        navigate('/dashboard');
-      }
-    } else {
-      if (result.errors) {
-        // Ошибки валидации полей
-        setFieldErrors(result.errors);
-      } else {
-        setError(result.error);
-      }
+    if (password.length < 8) {
+      setError('Пароль должен содержать не менее 8 символов');
+      return;
     }
 
-    setLoading(false);
+    setLoading(true);
+
+    try {
+      const result = await dispatch(registerAction({ email, password })).unwrap();
+
+      if (result) {
+        // Проверяем, является ли пользователь администратором
+        if (email === 'admin@example.com' || email === 'feed45537@gmail.com') {
+          navigate('/admin');
+        } else {
+          navigate('/dashboard');
+        }
+      }
+    } catch (err) {
+      setError(err || 'Ошибка при регистрации');
+    } finally {
+      setLoading(false);
+    }
   };
+
+  const handleClickShowPassword = () => {
+    setShowPassword(!showPassword);
+  };
+
+  const handleClickShowConfirmPassword = () => {
+    setShowConfirmPassword(!showConfirmPassword);
+  };
+
+  const handleMouseDownPassword = (event) => {
+    event.preventDefault();
+  };
+
+  // Объединяем ошибки из состояния и локальные
+  const displayError = authError || error;
 
   return (
     <Box
@@ -108,7 +129,7 @@ function RegisterPage() {
         </Typography>
       </Box>
 
-      <Collapse in={!!error}>
+      <Collapse in={!!displayError}>
         <Alert
           severity="error"
           sx={{
@@ -119,7 +140,7 @@ function RegisterPage() {
             border: '1px solid rgba(239, 68, 68, 0.2)',
           }}
         >
-          {error}
+          {displayError}
         </Alert>
       </Collapse>
 
@@ -134,8 +155,6 @@ function RegisterPage() {
           autoFocus
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          error={!!fieldErrors.email}
-          helperText={fieldErrors.email || ""}
           variant="outlined"
           sx={{
             mb: 3,
@@ -179,12 +198,10 @@ function RegisterPage() {
           margin="normal"
           name="password"
           label="Пароль"
-          type="password"
+          type={showPassword ? "text" : "password"}
           id="password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-          error={!!fieldErrors.password}
-          helperText={fieldErrors.password || ""}
           variant="outlined"
           sx={{
             mb: 3,
@@ -221,6 +238,23 @@ function RegisterPage() {
               }
             }
           }}
+          InputProps={{
+            endAdornment: (
+              <InputAdornment position="end">
+                <IconButton
+                  aria-label="toggle password visibility"
+                  onClick={handleClickShowPassword}
+                  onMouseDown={handleMouseDownPassword}
+                  edge="end"
+                  sx={{
+                    color: 'rgba(255, 255, 255, 0.5)',
+                  }}
+                >
+                  {showPassword ? <VisibilityOff /> : <Visibility />}
+                </IconButton>
+              </InputAdornment>
+            ),
+          }}
         />
 
         <TextField
@@ -228,7 +262,7 @@ function RegisterPage() {
           margin="normal"
           name="confirmPassword"
           label="Подтверждение пароля"
-          type="password"
+          type={showConfirmPassword ? "text" : "password"}
           id="confirmPassword"
           value={confirmPassword}
           onChange={(e) => setConfirmPassword(e.target.value)}
@@ -268,6 +302,23 @@ function RegisterPage() {
               }
             }
           }}
+          InputProps={{
+            endAdornment: (
+              <InputAdornment position="end">
+                <IconButton
+                  aria-label="toggle confirm password visibility"
+                  onClick={handleClickShowConfirmPassword}
+                  onMouseDown={handleMouseDownPassword}
+                  edge="end"
+                  sx={{
+                    color: 'rgba(255, 255, 255, 0.5)',
+                  }}
+                >
+                  {showConfirmPassword ? <VisibilityOff /> : <Visibility />}
+                </IconButton>
+              </InputAdornment>
+            ),
+          }}
         />
 
         <Button
@@ -292,9 +343,9 @@ function RegisterPage() {
               color: 'rgba(255, 255, 255, 0.5)',
             }
           }}
-          disabled={loading}
+          disabled={loading || authLoading}
         >
-          {loading ? 'Регистрация...' : 'Зарегистрироваться'}
+          {loading || authLoading ? 'Регистрация...' : 'Зарегистрироваться'}
         </Button>
 
         <Typography
