@@ -45,6 +45,18 @@ function DashboardPage() {
   useEffect(() => {
     // Здесь можно загружать статистику с сервера
     // fetchStats();
+
+    // Обработчик события для кнопки "Добавить магазин"
+    const handleAddStoreClick = () => {
+      setActiveSection(0);
+      setShowAddStore(true);
+    };
+
+    window.addEventListener('addStoreClick', handleAddStoreClick);
+
+    return () => {
+      window.removeEventListener('addStoreClick', handleAddStoreClick);
+    };
   }, []);
 
   const handleLogout = () => {
@@ -220,8 +232,60 @@ function DashboardPage() {
             <StoresList />
           </Box>
         )}
-        {activeSection === 1 && <ProductsView />}
-        {activeSection === 2 && <MappingsView />}
+        {activeSection === 1 && (
+          <Box>
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+              <Typography variant="h6" sx={{ color: 'white', fontWeight: 'bold' }}>
+                Товары из маркетплейсов
+              </Typography>
+              <Button
+                variant="contained"
+                startIcon={<AddIcon />}
+                onClick={() => setShowAddStore(true)}
+                sx={{
+                  background: 'linear-gradient(135deg, #3b82f6, #60a5fa)',
+                  textTransform: 'none',
+                  fontWeight: 'bold',
+                  px: 3,
+                  py: 1,
+                  '&:hover': {
+                    background: 'linear-gradient(135deg, #2563eb, #3b82f6)',
+                  }
+                }}
+              >
+                Добавить магазин
+              </Button>
+            </Box>
+            <ProductsView />
+          </Box>
+        )}
+        {activeSection === 2 && (
+          <Box>
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+              <Typography variant="h6" sx={{ color: 'white', fontWeight: 'bold' }}>
+                Объединенные товары
+              </Typography>
+              <Button
+                variant="contained"
+                startIcon={<AddIcon />}
+                onClick={() => setShowAddStore(true)}
+                sx={{
+                  background: 'linear-gradient(135deg, #3b82f6, #60a5fa)',
+                  textTransform: 'none',
+                  fontWeight: 'bold',
+                  px: 3,
+                  py: 1,
+                  '&:hover': {
+                    background: 'linear-gradient(135deg, #2563eb, #3b82f6)',
+                  }
+                }}
+              >
+                Добавить магазин
+              </Button>
+            </Box>
+            <MappingsView />
+          </Box>
+        )}
       </Box>
 
       <AddStoreDialog

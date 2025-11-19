@@ -33,6 +33,7 @@ import {
   MoreVert as MoreVertIcon,
   Visibility as VisibilityIcon
 } from '@mui/icons-material';
+import EmptyState from './EmptyState';
 
 function MappingsView() {
   const [mappings, setMappings] = useState([]);
@@ -116,30 +117,6 @@ function MappingsView() {
 
   return (
     <Box>
-      <Box sx={{
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        mb: 3,
-        flexWrap: 'wrap',
-        gap: 2
-      }}>
-        <Typography
-          variant="h5"
-          fontWeight="bold"
-          sx={{ color: theme.palette.mode === 'dark' ? '#e0e0e0' : '#333333' }}
-        >
-          Объединенные товары
-        </Typography>
-        <Typography
-          variant="h6"
-          color="text.secondary"
-          sx={{ fontWeight: 500 }}
-        >
-          Всего сопоставлений: {mappings.length}
-        </Typography>
-      </Box>
-
       {mappings.length > 0 ? (
         <>
           <TableContainer
@@ -522,25 +499,7 @@ function MappingsView() {
           </Grid>
         </>
       ) : (
-        <Card
-          sx={{
-            textAlign: 'center',
-            py: 6,
-            borderRadius: 2,
-            backgroundColor: theme.palette.mode === 'dark' ? '#1e1e1e' : '#ffffff',
-            border: `2px dashed ${theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}`
-          }}
-        >
-          <CardContent>
-            <CompareIcon sx={{ fontSize: 60, color: 'action.active', mb: 2 }} />
-            <Typography variant="h6" gutterBottom>
-              Нет объединенных товаров
-            </Typography>
-            <Typography variant="body2" color="text.secondary">
-              Сопоставьте товары из разных маркетплейсов, чтобы видеть их объединенную статистику
-            </Typography>
-          </CardContent>
-        </Card>
+        <EmptyState type="mappings" />
       )}
 
       {/* Меню действий над сопоставлением */}

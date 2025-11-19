@@ -22,6 +22,7 @@ import {
 } from '@mui/material';
 import { productsAPI } from '../services/api';
 import { CompareArrows as CompareIcon, Visibility as VisibilityIcon } from '@mui/icons-material';
+import EmptyState from './EmptyState';
 
 function ProductsView() {
   const [products, setProducts] = useState([]);
@@ -216,164 +217,130 @@ function ProductsView() {
 
   return (
     <Box>
-      <Box sx={{
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        mb: 3,
-        flexWrap: 'wrap',
-        gap: 2
-      }}>
-        <Typography
-          variant="h5"
-          fontWeight="bold"
-          sx={{ color: theme.palette.mode === 'dark' ? '#e0e0e0' : '#333333' }}
-        >
-          Товары из маркетплейсов
-        </Typography>
-
-        <Box sx={{ display: 'flex', gap: 1 }}>
-          <Button
-            variant={viewMode === 'table' ? 'contained' : 'outlined'}
-            onClick={() => setViewMode('table')}
-            sx={{
-              borderRadius: 2,
-              minWidth: 100
-            }}
-          >
-            Таблица
-          </Button>
-          <Button
-            variant={viewMode === 'grid' ? 'contained' : 'outlined'}
-            onClick={() => setViewMode('grid')}
-            sx={{
-              borderRadius: 2,
-              minWidth: 100
-            }}
-          >
-            Сетка
-          </Button>
-        </Box>
-      </Box>
-
-      {viewMode === 'table' ? (
-        <TableContainer
-          component={Paper}
-          sx={{
-            borderRadius: 3,
-            overflow: 'hidden',
-            boxShadow: theme.palette.mode === 'dark' ? '0px 4px 20px rgba(0, 0, 0, 0.4)' : '0px 4px 20px rgba(0, 0, 0, 0.08)',
-            backgroundColor: theme.palette.mode === 'dark' ? '#1e1e1e' : '#ffffff'
-          }}
-        >
-          <Table>
-            <TableHead>
-              <TableRow
-                sx={{
-                  backgroundColor: theme.palette.mode === 'dark' ? '#2a2a2a' : '#f5f5f5'
-                }}
-              >
-                <TableCell sx={{ fontWeight: 'bold' }}>Товар</TableCell>
-                <TableCell sx={{ fontWeight: 'bold' }}>Магазин</TableCell>
-                <TableCell sx={{ fontWeight: 'bold' }}>Цена</TableCell>
-                <TableCell sx={{ fontWeight: 'bold' }}>Количество</TableCell>
-                <TableCell sx={{ fontWeight: 'bold' }}>Действия</TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {products.map((product) => (
-                <TableRow
-                  key={product.id}
-                  sx={{
-                    '&:last-child td, &:last-child th': { border: 0 },
-                    '&:hover': {
-                      backgroundColor: theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.02)'
-                    }
-                  }}
-                >
-                  <TableCell component="th" scope="row">
-                    <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                      <Box
-                        sx={{
-                          width: 40,
-                          height: 40,
-                          borderRadius: '4px',
-                          backgroundColor: theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          mr: 2
-                        }}
-                      >
-                        <VisibilityIcon
-                          sx={{
-                            fontSize: 20,
-                            color: theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.3)'
-                          }}
-                        />
-                      </Box>
-                      <Box>
-                        <Typography variant="body1" fontWeight="medium">
-                          {product.name}
-                        </Typography>
-                        <Typography variant="body2" color="text.secondary">
-                          ID: {product.id}
-                        </Typography>
-                      </Box>
-                    </Box>
-                  </TableCell>
-                  <TableCell>
-                    <Chip
-                      label={product.store_type === 'wb' ? 'Wildberries' : 'Ozon'}
-                      size="small"
+      {products.length > 0 ? (
+        <>
+          {viewMode === 'table' ? (
+            <TableContainer
+              component={Paper}
+              sx={{
+                borderRadius: 3,
+                overflow: 'hidden',
+                boxShadow: theme.palette.mode === 'dark' ? '0px 4px 20px rgba(0, 0, 0, 0.4)' : '0px 4px 20px rgba(0, 0, 0, 0.08)',
+                backgroundColor: theme.palette.mode === 'dark' ? '#1e1e1e' : '#ffffff'
+              }}
+            >
+              <Table>
+                <TableHead>
+                  <TableRow
+                    sx={{
+                      backgroundColor: theme.palette.mode === 'dark' ? '#2a2a2a' : '#f5f5f5'
+                    }}
+                  >
+                    <TableCell sx={{ fontWeight: 'bold' }}>Товар</TableCell>
+                    <TableCell sx={{ fontWeight: 'bold' }}>Магазин</TableCell>
+                    <TableCell sx={{ fontWeight: 'bold' }}>Цена</TableCell>
+                    <TableCell sx={{ fontWeight: 'bold' }}>Количество</TableCell>
+                    <TableCell sx={{ fontWeight: 'bold' }}>Действия</TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {products.map((product) => (
+                    <TableRow
+                      key={product.id}
                       sx={{
-                        borderRadius: 1,
-                        fontSize: '0.75rem',
-                        fontWeight: 500
+                        '&:last-child td, &:last-child th': { border: 0 },
+                        '&:hover': {
+                          backgroundColor: theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.02)'
+                        }
                       }}
-                      color={product.store_type === 'ozon' ? 'primary' : 'secondary'}
-                      variant="outlined"
-                    />
-                  </TableCell>
-                  <TableCell>
-                    <Typography variant="body1" fontWeight="bold" color="success.main">
-                      {product.price} ₽
-                    </Typography>
-                  </TableCell>
-                  <TableCell>
-                    <Typography variant="body1">
-                      {product.quantity} шт
-                    </Typography>
-                  </TableCell>
-                  <TableCell>
-                    <Box sx={{ display: 'flex', gap: 1 }}>
-                      <Button
-                        variant="contained"
-                        size="small"
-                        startIcon={<CompareIcon />}
-                        sx={{
-                          borderRadius: 2,
-                          textTransform: 'none',
-                          fontWeight: 500
-                        }}
-                      >
-                        Сопоставить
-                      </Button>
-                    </Box>
-                  </TableCell>
-                </TableRow>
+                    >
+                      <TableCell component="th" scope="row">
+                        <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                          <Box
+                            sx={{
+                              width: 40,
+                              height: 40,
+                              borderRadius: '4px',
+                              backgroundColor: theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              mr: 2
+                            }}
+                          >
+                            <VisibilityIcon
+                              sx={{
+                                fontSize: 20,
+                                color: theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.3)'
+                              }}
+                            />
+                          </Box>
+                          <Box>
+                            <Typography variant="body1" fontWeight="medium">
+                              {product.name}
+                            </Typography>
+                            <Typography variant="body2" color="text.secondary">
+                              ID: {product.id}
+                            </Typography>
+                          </Box>
+                        </Box>
+                      </TableCell>
+                      <TableCell>
+                        <Chip
+                          label={product.store_type === 'wb' ? 'Wildberries' : 'Ozon'}
+                          size="small"
+                          sx={{
+                            borderRadius: 1,
+                            fontSize: '0.75rem',
+                            fontWeight: 500
+                          }}
+                          color={product.store_type === 'ozon' ? 'primary' : 'secondary'}
+                          variant="outlined"
+                        />
+                      </TableCell>
+                      <TableCell>
+                        <Typography variant="body1" fontWeight="bold" color="success.main">
+                          {product.price} ₽
+                        </Typography>
+                      </TableCell>
+                      <TableCell>
+                        <Typography variant="body1">
+                          {product.quantity} шт
+                        </Typography>
+                      </TableCell>
+                      <TableCell>
+                        <Box sx={{ display: 'flex', gap: 1 }}>
+                          <Button
+                            variant="contained"
+                            size="small"
+                            startIcon={<CompareIcon />}
+                            sx={{
+                              borderRadius: 2,
+                              textTransform: 'none',
+                              fontWeight: 500
+                            }}
+                          >
+                            Сопоставить
+                          </Button>
+                        </Box>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </TableContainer>
+          ) : (
+            <Grid container spacing={3}>
+              {products.map((product) => (
+                <Grid item xs={12} sm={6} md={4} lg={3} key={product.id}>
+                  <ProductCard product={product} />
+                </Grid>
               ))}
-            </TableBody>
-          </Table>
-        </TableContainer>
-      ) : (
-        <Grid container spacing={3}>
-          {products.map((product) => (
-            <Grid item xs={12} sm={6} md={4} lg={3} key={product.id}>
-              <ProductCard product={product} />
             </Grid>
-          ))}
-        </Grid>
+          )}
+        </>
+      ) : (
+        <EmptyState type="products" />
       )}
     </Box>
   );

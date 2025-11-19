@@ -30,6 +30,7 @@ import {
   Cancel as CancelIcon
 } from '@mui/icons-material';
 import { storesAPI } from '../services/api';
+import EmptyState from './EmptyState';
 
 function StoresList() {
   const [stores, setStores] = useState([]);
@@ -111,27 +112,7 @@ function StoresList() {
 
   return (
     <Box>
-      {stores.length === 0 ? (
-        <Card
-          sx={{
-            textAlign: 'center',
-            py: 6,
-            borderRadius: 2,
-            backgroundColor: theme.palette.mode === 'dark' ? '#1e1e1e' : '#ffffff',
-            border: `2px dashed ${theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}`
-          }}
-        >
-          <CardContent>
-            <StoreIcon sx={{ fontSize: 60, color: 'action.active', mb: 2 }} />
-            <Typography variant="h6" gutterBottom>
-              Нет подключенных магазинов
-            </Typography>
-            <Typography variant="body2" color="text.secondary">
-              Добавьте первый магазин, чтобы начать отслеживание товаров
-            </Typography>
-          </CardContent>
-        </Card>
-      ) : (
+      {stores.length > 0 ? (
         <Grid container spacing={3}>
           {stores.map((store) => (
             <Grid item xs={12} md={6} lg={4} key={store.id}>
@@ -258,6 +239,8 @@ function StoresList() {
             </Grid>
           ))}
         </Grid>
+      ) : (
+        <EmptyState type="stores" />
       )}
 
       {/* Меню действий над магазином */}
