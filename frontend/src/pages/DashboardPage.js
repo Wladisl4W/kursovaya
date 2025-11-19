@@ -238,44 +238,25 @@ function DashboardPage() {
               <Typography variant="h6" sx={{ color: 'white', fontWeight: 'bold' }}>
                 Товары из маркетплейсов
               </Typography>
-              <Box sx={{ display: 'flex', gap: 1 }}>
-                <Button
-                  variant="outlined"
-                  startIcon={<AddIcon />}
-                  onClick={() => {/* TODO: Implement filtering functionality */}}
-                  sx={{
-                    color: 'white',
-                    borderColor: 'rgba(255, 255, 255, 0.3)',
-                    textTransform: 'none',
-                    fontWeight: 'bold',
-                    px: 2,
-                    py: 1,
-                    '&:hover': {
-                      background: 'rgba(255, 255, 255, 0.05)',
-                      borderColor: 'rgba(255, 255, 255, 0.5)',
-                    }
-                  }}
-                >
-                  Фильтровать
-                </Button>
-                <Button
-                  variant="contained"
-                  startIcon={<AddIcon />}
-                  onClick={() => setShowAddStore(true)}
-                  sx={{
-                    background: 'linear-gradient(135deg, #3b82f6, #60a5fa)',
-                    textTransform: 'none',
-                    fontWeight: 'bold',
-                    px: 3,
-                    py: 1,
-                    '&:hover': {
-                      background: 'linear-gradient(135deg, #2563eb, #3b82f6)',
-                    }
-                  }}
-                >
-                  Добавить магазин
-                </Button>
-              </Box>
+              <Button
+                variant="outlined"
+                startIcon={<AddIcon />}
+                onClick={() => {/* TODO: Implement filtering functionality */}}
+                sx={{
+                  color: 'white',
+                  borderColor: 'rgba(255, 255, 255, 0.3)',
+                  textTransform: 'none',
+                  fontWeight: 'bold',
+                  px: 3,
+                  py: 1,
+                  '&:hover': {
+                    background: 'rgba(255, 255, 255, 0.05)',
+                    borderColor: 'rgba(255, 255, 255, 0.5)',
+                  }
+                }}
+              >
+                Фильтровать
+              </Button>
             </Box>
             <ProductsView />
           </Box>
@@ -286,44 +267,25 @@ function DashboardPage() {
               <Typography variant="h6" sx={{ color: 'white', fontWeight: 'bold' }}>
                 Объединенные товары
               </Typography>
-              <Box sx={{ display: 'flex', gap: 1 }}>
-                <Button
-                  variant="outlined"
-                  startIcon={<AddIcon />}
-                  onClick={() => {/* TODO: Implement sorting functionality */}}
-                  sx={{
-                    color: 'white',
-                    borderColor: 'rgba(255, 255, 255, 0.3)',
-                    textTransform: 'none',
-                    fontWeight: 'bold',
-                    px: 2,
-                    py: 1,
-                    '&:hover': {
-                      background: 'rgba(255, 255, 255, 0.05)',
-                      borderColor: 'rgba(255, 255, 255, 0.5)',
-                    }
-                  }}
-                >
-                  Сортировать
-                </Button>
-                <Button
-                  variant="contained"
-                  startIcon={<AddIcon />}
-                  onClick={() => setShowAddStore(true)}
-                  sx={{
-                    background: 'linear-gradient(135deg, #3b82f6, #60a5fa)',
-                    textTransform: 'none',
-                    fontWeight: 'bold',
-                    px: 3,
-                    py: 1,
-                    '&:hover': {
-                      background: 'linear-gradient(135deg, #2563eb, #3b82f6)',
-                    }
-                  }}
-                >
-                  Добавить магазин
-                </Button>
-              </Box>
+              <Button
+                variant="outlined"
+                startIcon={<AddIcon />}
+                onClick={() => {/* TODO: Implement filtering functionality */}}
+                sx={{
+                  color: 'white',
+                  borderColor: 'rgba(255, 255, 255, 0.3)',
+                  textTransform: 'none',
+                  fontWeight: 'bold',
+                  px: 3,
+                  py: 1,
+                  '&:hover': {
+                    background: 'rgba(255, 255, 255, 0.05)',
+                    borderColor: 'rgba(255, 255, 255, 0.5)',
+                  }
+                }}
+              >
+                Фильтровать
+              </Button>
             </Box>
             <MappingsView />
           </Box>
