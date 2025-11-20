@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"fmt"
 	"kursovaya_backend/internal/errors"
 	"github.com/gin-gonic/gin"
 )

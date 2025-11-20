@@ -3,7 +3,6 @@ package service
 import (
 	"database/sql"
 	"testing"
-	"kursovaya_backend/internal/models"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -23,6 +22,7 @@ func (m *MockDB) Query(query string, args ...interface{}) (*sql.Rows, error) {
 	if query == "SELECT COUNT(*) FROM users WHERE email = $1" {
 		email := args[0].(string)
 		_, exists := m.users[email]
+		_ = exists // Используем переменную, чтобы избежать ошибки "declared but not used"
 		// Создаем фиктивный результат с количеством
 		// (реализация здесь упрощена для демонстрации)
 	}

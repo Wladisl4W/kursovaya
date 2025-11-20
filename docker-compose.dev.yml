@@ -1,0 +1,66 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:13
+    environment:
+      - POSTGRES_DB=marketplace_tracker
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - app-network
+    restart: on-failure
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    environment:
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_USER=postgres
+      - DB_PASSWORD=password
+      - DB_NAME=marketplace_tracker
+      - JWT_SECRET=your-super-secret-jwt-key
+      - ENCRYPTION_KEY=your-super-secret-encryption-key
+      - ALLOW_ORIGINS=http://localhost:3000,http://127.0.0.1:3000,http://frontend:80
+      - ADMIN_DEFAULT_PASSWORD=SecureAdminPassword123!
+    depends_on:
+      - postgres
+    networks:
+      - app-network
+    restart: on-failure
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.dev
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    environment:
+      - REACT_APP_API_URL=http://localhost:8080
+      - CHOKIDAR_USEPOLLING=true
+      - WATCHPACK_POLLING=true
+    depends_on:
+      - backend
+    networks:
+      - app-network
+    stdin_open: true
+    tty: true
+    restart: on-failure
+
+volumes:
+  postgres_data:
+
+networks:
+  app-network:
+    driver: bridge

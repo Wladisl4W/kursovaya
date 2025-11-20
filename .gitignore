@@ -2,3 +2,4 @@ frontend/.env
 
 .gemini/
 gha-creds-*.json
+frontend/node_modules/

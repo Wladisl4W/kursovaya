@@ -47,12 +47,8 @@ function RegisterPage() {
       const result = await dispatch(registerAction({ email, password })).unwrap();
 
       if (result) {
-        // Проверяем, является ли пользователь администратором
-        if (email === 'admin@example.com' || email === 'feed45537@gmail.com') {
-          navigate('/admin');
-        } else {
-          navigate('/dashboard');
-        }
+        // После регистрации перенаправляем на страницу входа
+        navigate('/login');
       }
     } catch (err) {
       setError(err || 'Ошибка при регистрации');

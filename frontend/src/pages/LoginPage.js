@@ -59,53 +59,59 @@ function LoginPage() {
     <Box
       sx={{
         width: '100%',
-        maxWidth: 400,
+        maxWidth: 450,
         mx: 'auto',
-        p: 3,
+        p: 4,
+        borderRadius: '20px',
+        background: 'rgba(30, 30, 30, 0.6)',
+        backdropFilter: 'blur(10px)',
+        border: '1px solid rgba(255, 255, 255, 0.1)',
+        boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3)',
       }}
     >
-      <Box sx={{ textAlign: 'center', mb: 6 }}>
-        <Box
-          sx={{
-            width: 80,
-            height: 80,
-            mx: 'auto',
-            mb: 2,
-            background: 'linear-gradient(135deg, #3b82f6, #60a5fa)',
-            borderRadius: '50%',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-          }}
-        >
-          <Typography
-            variant="h4"
-            sx={{
-              color: 'white',
-              fontWeight: 'bold',
-              fontSize: '1.8rem',
-            }}
-          >
-            MT
-          </Typography>
-        </Box>
+      <Box sx={{ textAlign: 'center', mb: 4 }}>
         <Typography
-          variant="h5"
+          variant="h2"
           sx={{
             color: 'white',
             fontWeight: 'bold',
-            mb: 1,
+            mb: 2,
+            background: 'linear-gradient(135deg, #3b82f6, #60a5fa)',
+            backgroundClip: 'text',
+            WebkitBackgroundClip: 'text',
+            WebkitTextFillColor: 'transparent',
+            fontSize: { xs: '2rem', sm: '2.5rem', md: '3rem' },
+            lineHeight: 1.2,
           }}
         >
-          Добро пожаловать
+          Marketplace Tracker
         </Typography>
-        <Typography
-          sx={{
-            color: 'rgba(255, 255, 255, 0.7)',
-          }}
-        >
-          Войдите в свой аккаунт
-        </Typography>
+        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', mb: 3 }}>
+          <Box sx={{
+            flex: 1,
+            height: '1px',
+            backgroundColor: 'rgba(255, 255, 255, 0.5)',
+            mr: 1
+          }} />
+          <Typography
+            variant="h6"
+            sx={{
+              color: 'rgba(255, 255, 255, 0.8)',
+              fontWeight: 400,
+              mx: 1,
+              minWidth: 'max-content',
+              whiteSpace: 'nowrap'
+            }}
+          >
+            Добро пожаловать
+          </Typography>
+          <Box sx={{
+            flex: 1,
+            height: '1px',
+            backgroundColor: 'rgba(255, 255, 255, 0.5)',
+            ml: 1
+          }} />
+        </Box>
       </Box>
 
       <Collapse in={!!displayError}>
@@ -123,10 +129,9 @@ function LoginPage() {
         </Alert>
       </Collapse>
 
-      <Box component="form" onSubmit={handleSubmit}>
+      <Box component="form" onSubmit={handleSubmit} sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
         <TextField
           fullWidth
-          margin="normal"
           id="email"
           label="Email"
           name="email"
@@ -136,24 +141,25 @@ function LoginPage() {
           onChange={(e) => setEmail(e.target.value)}
           variant="outlined"
           sx={{
-            mb: 3,
             '& .MuiOutlinedInput-root': {
               background: 'rgba(255, 255, 255, 0.08)',
-              borderRadius: '12px',
+              borderRadius: '14px',
               color: 'white',
               '& fieldset': {
                 borderColor: 'rgba(255, 255, 255, 0.2)',
-                borderWidth: '1px',
+                borderWidth: '1.5px',
               },
               '&:hover fieldset': {
-                borderColor: 'rgba(255, 255, 255, 0.3)',
+                borderColor: 'rgba(59, 130, 246, 0.5)',
               },
               '&.Mui-focused fieldset': {
                 borderColor: '#3b82f6',
+                borderWidth: '2px',
               },
               '& input': {
-                py: '14px',
-                px: '16px',
+                py: '15px',
+                px: '18px',
+                fontSize: '1rem',
               }
             },
             '& .MuiInputLabel-root': {
@@ -174,7 +180,6 @@ function LoginPage() {
 
         <TextField
           fullWidth
-          margin="normal"
           name="password"
           label="Пароль"
           type={showPassword ? "text" : "password"}
@@ -184,24 +189,25 @@ function LoginPage() {
           onChange={(e) => setPassword(e.target.value)}
           variant="outlined"
           sx={{
-            mb: 3,
             '& .MuiOutlinedInput-root': {
               background: 'rgba(255, 255, 255, 0.08)',
-              borderRadius: '12px',
+              borderRadius: '14px',
               color: 'white',
               '& fieldset': {
                 borderColor: 'rgba(255, 255, 255, 0.2)',
-                borderWidth: '1px',
+                borderWidth: '1.5px',
               },
               '&:hover fieldset': {
-                borderColor: 'rgba(255, 255, 255, 0.3)',
+                borderColor: 'rgba(59, 130, 246, 0.5)',
               },
               '&.Mui-focused fieldset': {
                 borderColor: '#3b82f6',
+                borderWidth: '2px',
               },
               '& input': {
-                py: '14px',
-                px: '16px',
+                py: '15px',
+                px: '18px',
+                fontSize: '1rem',
               }
             },
             '& .MuiInputLabel-root': {
@@ -244,15 +250,16 @@ function LoginPage() {
           size="large"
           sx={{
             py: 1.5,
-            fontSize: '1rem',
+            fontSize: '1.1rem',
             fontWeight: 'bold',
-            borderRadius: '12px',
+            borderRadius: '14px',
             background: 'linear-gradient(135deg, #3b82f6, #60a5fa)',
             textTransform: 'none',
-            boxShadow: 'none',
+            boxShadow: '0 4px 15px rgba(59, 130, 246, 0.3)',
+            mt: 2,
             '&:hover': {
               background: 'linear-gradient(135deg, #2563eb, #3b82f6)',
-              boxShadow: '0 10px 25px -5px rgba(59, 130, 246, 0.4), 0 8px 10px -6px rgba(59, 130, 246, 0.3)',
+              boxShadow: '0 6px 20px rgba(59, 130, 246, 0.4)',
             },
             '&:disabled': {
               background: 'rgba(255, 255, 255, 0.1)',
@@ -267,18 +274,26 @@ function LoginPage() {
         <Typography
           variant="body2"
           sx={{
-            mt: 3,
+            mt: 1,
             textAlign: 'center',
-            color: 'rgba(255, 255, 255, 0.5)',
+            color: 'rgba(255, 255, 255, 0.6)',
           }}
         >
           Нет аккаунта?{' '}
           <Link
             to="/register"
             style={{
-              color: '#60a5fa',
+              color: '#93c5fd',
               textDecoration: 'none',
               fontWeight: 'bold',
+              borderBottom: '1px solid transparent',
+              transition: 'border-color 0.2s ease',
+            }}
+            onMouseEnter={(e) => {
+              e.target.style.borderColor = '#93c5fd';
+            }}
+            onMouseLeave={(e) => {
+              e.target.style.borderColor = 'transparent';
             }}
           >
             Зарегистрироваться

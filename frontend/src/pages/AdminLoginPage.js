@@ -266,26 +266,6 @@ function AdminLoginPage() {
           {loading ? 'Вход...' : 'Войти как админ'}
         </Button>
 
-        <Typography
-          variant="body2"
-          sx={{
-            mt: 3,
-            textAlign: 'center',
-            color: 'rgba(255, 255, 255, 0.5)',
-          }}
-        >
-          Назад ко входу?{' '}
-          <Link
-            to="/login"
-            style={{
-              color: '#a78bfa',
-              textDecoration: 'none',
-              fontWeight: 'bold',
-            }}
-          >
-            Войти как пользователь
-          </Link>
-        </Typography>
       </Box>
     </Box>
   );

@@ -1,6 +1,7 @@
 package service
 
 import (
+	"database/sql"
 	"kursovaya_backend/internal/database"
 	"kursovaya_backend/internal/errors"
 	"kursovaya_backend/internal/models"
@@ -8,14 +9,17 @@ import (
 )
 
 // Глобальная переменная DB для обратной совместимости
-var DB DBInterface = &RealDB{DB: database.DB}
+// Инициализируется с nil, будет присвоено значение позже
+var DB DBInterface
 
 func RegisterUser(email, password string) (*models.User, error) {
-	return RegisterUserWithDB(DB, email, password)
+	realDB := &RealDB{DB: database.DB}
+	return RegisterUserWithDB(realDB, email, password)
 }
 
 func AuthenticateUser(email, password string) (*models.User, error) {
-	return AuthenticateUserWithDB(DB, email, password)
+	realDB := &RealDB{DB: database.DB}
+	return AuthenticateUserWithDB(realDB, email, password)
 }
 
 func RegisterUserWithDB(db DBInterface, email, password string) (*models.User, error) {
@@ -55,7 +59,10 @@ func AuthenticateUserWithDB(db DBInterface, email, password string) (*models.Use
 	err := db.QueryRow("SELECT id, email, password FROM users WHERE email = $1", email).
 		Scan(&user.ID, &user.Email, &hashedPassword)
 	if err != nil {
-		return nil, errors.NotFound("User not found", "User with this email does not exist")
+		if err == sql.ErrNoRows {
+			return nil, errors.NotFound("User not found", "User with this email does not exist")
+		}
+		return nil, errors.InternalServerError("Error querying user", err.Error())
 	}
 
 	// Сравниваем пароль

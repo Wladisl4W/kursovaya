@@ -138,7 +138,7 @@ func (h *MappingHandler) getProductDetail(productID int) (ProductDetail, error) 
 
 	// Валидация ID продукта
 	if productID <= 0 {
-		return ProductDetail{}, errors.BadRequest("Некорректный ID товара", "Product ID must be positive").Error()
+		return ProductDetail{}, errors.BadRequest("Некорректный ID товара", "Product ID must be positive")
 	}
 
 	row := h.db.QueryRow(
@@ -149,9 +149,9 @@ func (h *MappingHandler) getProductDetail(productID int) (ProductDetail, error) 
 	err := row.Scan(&product.ID, &product.StoreID, &product.ExternalID, &product.Name, &product.Price, &product.Quantity)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return ProductDetail{}, errors.NotFound(fmt.Sprintf("товар с ID %d не найден", productID), "").Error()
+			return ProductDetail{}, errors.NotFound(fmt.Sprintf("товар с ID %d не найден", productID), "")
 		}
-		return ProductDetail{}, errors.InternalServerError("Ошибка получения информации о товаре", err.Error()).Error()
+		return ProductDetail{}, errors.InternalServerError("Ошибка получения информации о товаре", err.Error())
 	}
 
 	return product, nil
